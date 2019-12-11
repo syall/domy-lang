@@ -1,0 +1,16 @@
+{
+  "name": "domy",
+  "version": "1.0.0",
+  "description": "Do My Language",
+  "main": "src/domy.js",
+  "author": "Steven Yuan (syall)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-modules src/domy.js",
+    "test": "true"
+  },
+  "devDependencies": {
+    "eslint": "^6.7.2"
+  }
+}
