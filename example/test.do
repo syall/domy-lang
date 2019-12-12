@@ -11,6 +11,8 @@ do f2(arg1, arg2, arg3) {
 }
 
 my best = false;
-my result = f2(f1, stat, best);
+while(!best) {
+	best = !f2(f1, stat, best);
+}
 
-print(result ^ stat);
+print(best ^ stat);
