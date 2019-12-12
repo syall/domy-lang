@@ -1,20 +1,38 @@
 {
   "name": "domy",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Do My Language",
-  "main": "src/domy.js",
-  "author": "Steven Yuan (syall)",
+  "author": "Steven Yuan <s.yuan.all@gmail.com> (syall)",
   "license": "MIT",
-  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syall/domy.git"
+  },
   "scripts": {
     "start": "domy examples/test.do",
     "debug": "domy --nolazy --inspect-brk=9229 examples/test.do",
     "test": "true"
   },
+  "type": "module",
+  "preferGlobal": true,
   "bin": {
-    "domy": "src/domy.js"
+    "domy": "bin/domy.js"
+  },
+  "engines": {
+    "node": ">=12"
   },
   "devDependencies": {
     "eslint": "^6.7.2"
-  }
+  },
+  "keywords": [
+    "domy",
+    "esoteric",
+    "language",
+    "tdop",
+    "top down operator precedence",
+    "lex",
+    "parse",
+    "repl",
+    "cli"
+  ]
 }
