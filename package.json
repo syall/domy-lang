@@ -7,8 +7,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-modules src/domy.js",
+    "start": "domy examples/test.do",
+    "debug": "domy --nolazy --inspect-brk=9229 examples/test.do",
     "test": "true"
+  },
+  "bin": {
+    "domy": "src/domy.js"
   },
   "devDependencies": {
     "eslint": "^6.7.2"

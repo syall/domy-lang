@@ -1,29 +1,27 @@
+#!/usr/bin/env node --experimental-modules --no-warnings
+
+// Import Node.js Modules
 import { readFileSync, realpathSync } from 'fs';
 import { join } from 'path';
-import lexer from './lexer.js';
-import parser from './parser.js';
 
-console.log('Finding File Path...');
-const filePath = join(realpathSync('.'), 'examples', 'test.js');
-console.log('Found File Path!\n');
+// Import Lexer and Parser
+import Lexer from './lexer.js';
+import Parser from './parser.js';
 
-console.log('Reading File...');
+// Create File Path
+const filePath = join(
+	realpathSync('.'),
+	process.argv[process.argv.length - 1]
+);
+
+// Load File Content
 const fileContent = readFileSync(filePath).toString();
-console.log('Read File!\n');
 
-console.log('Start Lexing...');
-const tokens = lexer(fileContent);
-console.log('Finished Lexing!\n');
+// Create Tokens
+const tokens = new Lexer(fileContent);
 
-console.log('Start Parsing...');
-const tree = parser(tokens);
-console.log('Finished Parsing!\n');
+// Create Parse Tree
+const tree = new Parser(tokens);
 
-const displayParseOptions = [
-	'name', 'message',
-	'from', 'to',
-	'key', 'value',
-	'first', 'second', 'third', 'fourth'
-];
-console.log('Parse Tree:');
-console.log(JSON.stringify(tree, displayParseOptions, 2));
+// Print Parse Tree
+console.log(JSON.stringify({ tree }, null, 2));
