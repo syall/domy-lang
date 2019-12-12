@@ -1,9 +1,16 @@
-do test(hello) {
-	my variable =
-		(hello == true)
-			? false
-			: true;
-	return variable;
+my stat = true;
+my f1 = do(arg1, arg2) {
+	stat = stat
+		? (arg1 & stat)
+		: arg2 | !stat;
+	return stat ? arg1 : arg2;
 }
 
-my block = test(false);
+do f2(arg1, arg2, arg3) {
+	return arg1(arg2, arg3);
+}
+
+my best = false;
+my result = f2(f1, stat, best);
+
+print(result ^ stat);
