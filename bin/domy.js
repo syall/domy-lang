@@ -25,6 +25,7 @@ if (meta.args > 3) {
 if (meta.args < 3) {
 	try {
 		const repl = new DomyREPL();
+		repl.run();
 		process.exit(0);
 	} catch (error) {
 		console.error(error);
