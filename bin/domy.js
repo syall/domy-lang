@@ -45,7 +45,12 @@ try {
 }
 
 // Create Tokens
-meta.tokens = new Lexer(meta.fileContent);
+try {
+	meta.tokens = new Lexer().tokenize(meta.fileContent);
+	console.log(JSON.stringify(meta.tokens, null, 2));
+} catch (error) {
+	console.error(error);
+}
 
 // Create Parse Tree
 meta.tree = new Parser(meta.tokens);
