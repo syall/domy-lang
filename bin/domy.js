@@ -51,6 +51,7 @@ try {
 try {
 	const lexer = new DomyLexer();
 	meta.tokens = lexer.tokenize(meta.fileContent);
+	lexer.toString();
 } catch (error) {
 	console.error(error);
 	process.exit(1);

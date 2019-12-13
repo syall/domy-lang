@@ -37,6 +37,16 @@ export const operators = [
     '&',
     '!',
 ];
+export const unaryOperators = [
+    '!'
+];
+export const binaryOperators = [
+    '!=',
+    '==',
+    '|',
+    '^',
+    '&',
+];
 export const order = new Map([
     ['?', 40],
     [':', 40],
