@@ -5,9 +5,9 @@ import { readFileSync, realpathSync } from 'fs';
 import { join } from 'path';
 
 // Import Local modules
-import REPL from './repl.js';
-import Lexer from './lexer.js';
-import Parser from './parser.js';
+import DomyREPL from './repl.js';
+import DomyLexer from './lexer.js';
+import DomyParser from './parser.js';
 
 // Meta Data
 const meta = {
@@ -23,18 +23,21 @@ if (meta.args > 3) {
 
 // REPL
 if (meta.args < 3) {
-	console.log(REPL);
-	process.exit(0);
+	try {
+		const repl = new DomyREPL();
+		console.log(JSON.stringify(repl, null, 2));
+		process.exit(0);
+	} catch (error) {
+		console.error(error);
+		process.exit(1);
+	}
 }
 
 // Set File Argument
 meta.argv = process.argv[meta.args - 1];
 
 // Create File Path
-meta.filePath = join(
-	realpathSync('.'),
-	meta.argv
-);
+meta.filePath = join(realpathSync('.'), meta.argv);
 
 // Load File Content
 try {
@@ -46,14 +49,19 @@ try {
 
 // Create Tokens
 try {
-	meta.tokens = new Lexer().tokenize(meta.fileContent);
-	console.log(JSON.stringify(meta.tokens, null, 2));
+	const lexer = new DomyLexer();
+	meta.tokens = lexer.tokenize(meta.fileContent);
 } catch (error) {
 	console.error(error);
+	process.exit(1);
 }
 
 // Create Parse Tree
-meta.tree = new Parser(meta.tokens);
-
-// Print Parse Tree
-console.log(JSON.stringify(meta.tree, null, 2));
+try {
+	const parser = new DomyParser();
+	meta.tree = parser.parse(meta.tokens);
+	parser.toString();
+} catch (error) {
+	console.error(error);
+	process.exit(1);
+}
