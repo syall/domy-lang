@@ -43,8 +43,19 @@ statement
     : expression ";"?
     ;
 expression
+    : parenthesis-expr "?" parenthesis-expr ":" parenthesis-expr
+    : parenthesis-term binary-operator parenthesis-expr
+    : unary-operator parenthesis-expr
     : term
-    : term operator expression
+    ;
+parenthesis-expr
+    : parenthesis | expression
+    ;
+parenthesis-term
+    : parenthesis | term
+    ;
+parenthesis
+    : "(" expression ")"
     ;
 block
     : "{" statement* "}"
@@ -57,13 +68,12 @@ term
     : while-loop
     : "true"
     : "false"
-    : "either"
     ;
 variable-declaration
     : "my" variable-assignment
     ;
 variable-assignment
-    : variable-name "=" expression
+    : variable-name "=" expression | variable-name
     ;
 variable-name
     : alphabet ( alphanumeric | "_" | "-" )*
@@ -94,14 +104,15 @@ invoke-argument
 while-loop
     : "while"  "(" expression ")" block
     ;
-operator
-    : "?" expression ":"
+unary-operator
+    : "!"
+    ;
+binary-operator
     : "!="
     : "=="
     : "|"
     : "^"
     : "&"
-    : "!"
     ;
 ```
 

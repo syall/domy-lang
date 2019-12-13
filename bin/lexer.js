@@ -5,7 +5,9 @@ export default class DomyLexer {
 		this.record = [];
 		// Types
 		this.type = {
-			op: 'operator',
+			terop: 'ternary:operator',
+			binop: 'binary:operator',
+			unop: 'unary:operator',
 			paren: 'parenthesis:',
 			brack: 'parenthesis:',
 			comma: 'comma',
@@ -83,7 +85,7 @@ export default class DomyLexer {
 			} else if (isDoubleOperator(c)) { // ==, !=
 				addToken(
 					`${c}=`,
-					this.type.op,
+					this.type.binop,
 					i,
 					i + 2,
 					row,
@@ -92,9 +94,15 @@ export default class DomyLexer {
 				i++;
 				col++;
 			} else if (isOperator(c)) { // :, &, |, ^, ?, !
+				const type =
+					c === '?' || c === ':'
+						? this.type.terop
+						: c === '!'
+							? this.type.unop
+							: this.type.binop;
 				addToken(
 					c,
-					this.type.op,
+					type,
 					i,
 					i + 1,
 					row,
