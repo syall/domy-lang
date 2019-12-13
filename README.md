@@ -37,93 +37,79 @@ Domy runs as a command line application on node.js.
 
 ```text
 program
-    : statement*
-    ;
-statement
-    : expression ";"?
-    ;
+   : expression*
+   ;
 expression
-    : ternary-operation
-    : binary-operation
-    : unary-operation
-    : parenthesis-term
-    ;
-ternary-operation
-    : parenthesis-expr "?" parenthesis-expr ":" parenthesis-expr
-    ;
-binary-operation
-    : parenthesis-term binary-operator parenthesis-expr
-    ;
-binary-operator
-    : "!="
-    : "=="
-    : "|"
-    : "^"
-    : "&"
-    ;
-unary-operation
-    : unary-operator parenthesis-expr
-    ;
-unary-operator
-    : "!"
-    ;
-parenthesis-expr
-    : parenthesis | expression
-    ;
-parenthesis-term
-    : parenthesis | term
-    ;
-parenthesis
-    : "(" expression ")"
-    ;
+   : subexpr "?" (expression | block) ":" (expression | block)
+   | "while" expression block
+   | "do" arg_list block
+   | id inv_list
+   | block
+   | subexpr
+   | "return" expression?
+   | "continue"
+   | "break"
+   ;
+arg_list
+   : "(" (id ",")* id? ")"
+   ;
+inv_list
+   : "(" (inv ",")* inv? ")"
+   ;
+inv
+   : id | subexpr
+   ;
 block
-    : "{" statement* "}"
-    ;
+   : "{" expression* "}"
+   ;
+subexpr
+   : test
+   | "my" id "=" expression
+   | id "=" expression
+   ;
+test
+   : or
+   | or "==" or
+   | or "!=" or
+   ;
+or
+   : xor
+   | or "|" xor
+   ;
+xor
+   : and
+   | xor "^" and
+   ;
+and
+   : not
+   | and "&" not
+   ;
+not
+   : term
+   | "!" term
+   ;
 term
-    : variable-declaration
-    : variable-assignment
-    : function-declaration
-    : function-invocation
-    : variable-name
-    : while-loop
-    : "true"
-    : "false"
-    ;
-variable-declaration
-    : "my" variable-assignment
-    ;
-variable-assignment
-    : variable-name "=" expression | variable-name
-    ;
-variable-name
-    : alphabet ( alphanumeric | "_" | "-" )*
-    ;
-alphabetic
-    : ["a"-"z"] | ["A"-"Z"]
-    ;
-numeric
-    : [0-9]
-alphanumeric
-    : alphabetic | numeric
-    ;
-function-declaration
-    : "do" "(" arguments-declaration ")" block
-    ;
-arguments-declaration
-    : ( variable-name "," )* variable-name?
-    ;
-function-invocation
-    : variable-name "(" arguments-invocation ")"
-    ;
-arguments-invocation
-    : ( invoke-argument "," )* invoke-argument?
-    ;
-invoke-argument
-    : variable-name | expression
-    ;
-while-loop
-    : "while"  "(" expression ")" block
-    ;
+   : id
+   | true
+   | false
+   | "(" expression ")"
+   ;
+id
+   : letter (dash | letter | number)*
+   ;
+letter
+   : [a-z] | [A-Z]
+   ;
+dash
+   : "-" | "_"
+   ;
+number
+   : [0-9]
+   ;
+WS
+   : [\s\r\n\t] -> skip
+   | "#" .* "\n" -> skip
+   ;
 ```
 
 ## Motivation
