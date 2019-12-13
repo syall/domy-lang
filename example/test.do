@@ -14,7 +14,7 @@ my f2 = do(arg1, arg2, arg3) {
 my best = false;
 
 !best &
-while((best = !f2(f1, stat, best))) {
+while(best = !f2(f1, stat, best)) {
     stat & break;
     best & continue;
 } & best
