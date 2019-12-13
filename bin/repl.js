@@ -1,4 +1,3 @@
-class REPL {
+export default class DomyREPL {
 
 }
-export default REPL;
