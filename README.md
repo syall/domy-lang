@@ -1,19 +1,19 @@
-# Domy
+# Domy (o.O)
 
 ## Overview
 
 Domy is a simple boolean-centric language.
 
-In terms of language design, Domy shares features from
-both imperative and functional programming paradigms.
+In terms of language design, Domy shares features from both imperative and functional programming paradigms, supporting first class functions with no object-oriented nature!
 
 Core Ideas:
 
-* There are only boolean values
-* Every line of code returns a boolean value,
-  even constructs and assignment
+* There are only boolean values!
+* Every construct returns a boolean!
 
 ## Installation
+
+Requires npm or yarn:
 
 ```bash
 npm i -g domy-lang
@@ -23,7 +23,17 @@ npm i -g domy-lang
 yarn global add domy-lang
 ```
 
-## Formal Grammer
+## Implementation
+
+The Lexer is based on Bob Nystrom's Crafting Interpreters Book [chapter on Scanning](http://craftinginterpreters.com/scanning.html).
+
+The Parser is a simplified version of the implementation in Douglas Crockford's Top Down Operator Precedence (a.k.a. TDOP) Parser [Article](http://crockford.com/javascript/tdop/tdop.html).
+
+The Interpreter is self designed, traversing the Tree produced by the TDOP Parser.
+
+Domy runs as a command line application on node.js.
+
+## EBNF Grammer Definition
 
 ```text
 program
@@ -47,23 +57,24 @@ term
     : while-loop
     : "true"
     : "false"
+    : "either"
     ;
 variable-declaration
-    : "my" variable-name "=" expression
+    : "my" variable-assignment
+    ;
+variable-assignment
+    : variable-name "=" expression
     ;
 variable-name
     : alphabet ( alphanumeric | "_" | "-" )*
     ;
-alphabet
-    : [a-z] | [A-z]
+alphabetic
+    : ["a"-"z"] | ["A"-"Z"]
     ;
 numeric
     : [0-9]
 alphanumeric
-    : alphabet | numeric
-    ;
-variable-assignment
-    : variable-name "=" expression
+    : alphabetic | numeric
     ;
 function-declaration
     : "do" "(" arguments-declaration ")" block
@@ -84,46 +95,29 @@ while-loop
     : "while"  "(" expression ")" block
     ;
 operator
+    : "?" expression ":"
+    : "!="
+    : "=="
     : "|"
     : "^"
     : "&"
     : "!"
-    : "?" expression ":" expression
     ;
 ```
 
-## Implementation
-
-The Lexer is based on Bob Nystrom's Crafting Interpreters Book
-[chapter on Scanning](http://craftinginterpreters.com/scanning.html).
-
-The Parser is a simplified version of the implementation in Douglas
-Crockford's Top Down Operator Precedence (a.k.a. TDOP) Parser
-[Article](http://crockford.com/javascript/tdop/index.html).
-
-The Interpreter is self designed, traversing the Tree produced by the TDOP
-Parser.
-
-Domy runs as a command line application on node.js.
-
 ## Motivation
 
-Over the past year, I have been learning about different programming
-language paradigms and have been curious about finally implementing my
-own!
+Ever since I took [Principles of Programming Languages](https://www.cs.rutgers.edu/courses/principles-of-programming-languages) in Fall of 2018, I have been fascinated with learning about different programming language paradigms
 
-I quickly picked up how to create a lexer, but when it came to parsing,
-I had no success regardless of how many articles and tutorials I
-completed.
+Naturally, the ongoing search piqued my curiosity as to now implement my own language!
 
-My hope is that domy will be my first complete language, regardless of
-how esoteric the nature of it is.
+I quickly learned how to create a lexer, but when it came to parsing, I had no success regardless of how many articles and tutorials I completed.
 
-Also, I had a crazy line of thought where everything returns a boolean
-value with no language constructs, but some of the constructs were
-still useful for my own sanity and for turing completeness.
+My hope is that domy will be my first complete language, regardless of how esoteric the nature and value of it is.
 
-syall
+Also, I had a crazy line of thought where everything returns a boolean value with no language constructs, but some of the constructs were still useful for my own sanity and for turing completeness.
+
+[syall](https://github.com/syall)
 12/12/2019
 
-Sidenote: My favorite operator is the ternary operator
+Fun Fact: My favorite operator is the ternary operator
