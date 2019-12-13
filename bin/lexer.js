@@ -1,42 +1,23 @@
+import {
+	types,
+	reserved,
+	isIrrelevant,
+	isComment,
+	isOperator,
+	isDoubleOperator,
+	isParenthesis,
+	isBracket,
+	isComma,
+	isEqual,
+	isAlphabetic,
+	isWord
+} from './utils.js';
+
 export default class DomyLexer {
 
 	constructor() {
 		// Record of all Lexes
 		this.record = [];
-		// Types
-		this.type = {
-			terop: 'ternary:operator',
-			binop: 'binary:operator',
-			unop: 'unary:operator',
-			paren: 'parenthesis:',
-			brack: 'parenthesis:',
-			comma: 'comma',
-			assign: 'assignment',
-			saved: 'reserved',
-			name: 'word'
-		};
-		// Reserved Words
-		this.saved = new Set([
-			'true',
-			'false',
-			'either',
-			'my',
-			'do',
-			'while',
-			'return',
-			'break',
-			'continue',
-			'print'
-		]);
-		// Operators
-		this.ops = new Set([
-			'?',
-			'!',
-			'|',
-			'^',
-			'&',
-			':'
-		]);
 	}
 
 	tokenize(text) {
@@ -47,22 +28,6 @@ export default class DomyLexer {
 
 		// Tokens
 		const tokens = [];
-
-		// Utility Functions
-		const isIrrelevant = c => c <= ' ' || c === ';';
-		const isComment = c => c === '#';
-		const isOperator = c => this.ops.has(c);
-		const isDoubleOperator = c =>
-			(c === '!' || c === '=') &&
-			text[i + 1] === '=';
-		const isParenthesis = c => c === '(' || c === ')';
-		const isBracket = c => c === '{' || c === '}';
-		const isComma = c => c === ',';
-		const isEqual = c => c === '=';
-		const alphabet = /^[a-zA-Z]$/;
-		const isAlphabetic = c => c.match(alphabet);
-		const word = /^[-_a-zA-Z0-9]$/;
-		const isWord = c => c.match(word);
 		const addToken = (text, type, from, to, row, col) =>
 			tokens.push({ text, type, from, to, row, col });
 
@@ -82,10 +47,10 @@ export default class DomyLexer {
 				}
 				i--;
 				col = 0;
-			} else if (isDoubleOperator(c)) { // ==, !=
+			} else if (isDoubleOperator(c, text[i + 1])) { // ==, !=
 				addToken(
 					`${c}=`,
-					this.type.binop,
+					types.binop,
 					i,
 					i + 2,
 					row,
@@ -96,10 +61,10 @@ export default class DomyLexer {
 			} else if (isOperator(c)) { // :, &, |, ^, ?, !
 				const type =
 					c === '?' || c === ':'
-						? this.type.terop
+						? types.terop
 						: c === '!'
-							? this.type.unop
-							: this.type.binop;
+							? types.unop
+							: types.binop;
 				addToken(
 					c,
 					type,
@@ -111,7 +76,7 @@ export default class DomyLexer {
 			} else if (isEqual(c)) { // =
 				addToken(
 					c,
-					this.type.assign,
+					types.assign,
 					i,
 					i + 1,
 					row,
@@ -120,7 +85,7 @@ export default class DomyLexer {
 			} else if (isParenthesis(c)) { // (, )
 				addToken(
 					c,
-					`${this.type.paren}${c === '(' ? 'left' : 'right'}`,
+					`${types.paren}${c === '(' ? 'left' : 'right'}`,
 					i,
 					i + 1,
 					row,
@@ -129,7 +94,7 @@ export default class DomyLexer {
 			} else if (isBracket(c)) { // {, }
 				addToken(
 					c,
-					`${this.type.brack}${c === '{' ? 'left' : 'right'}`,
+					`${types.brack}${c === '{' ? 'left' : 'right'}`,
 					i,
 					i + 1,
 					row,
@@ -138,7 +103,7 @@ export default class DomyLexer {
 			} else if (isComma(c)) { // ,
 				addToken(
 					c,
-					this.type.comma,
+					types.comma,
 					i,
 					i + 1,
 					row,
@@ -153,9 +118,9 @@ export default class DomyLexer {
 					i++;
 					cur = text[i];
 				}
-				const type = this.saved.has(str)
-					? this.type.saved
-					: this.type.name;
+				const type = reserved.has(str)
+					? types.saved
+					: types.name;
 				addToken(
 					str,
 					type,
