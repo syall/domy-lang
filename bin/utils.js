@@ -11,6 +11,14 @@ export const types = {
     name: 'word'
 };
 
+export const tokenTypes = {
+    expr: 'expression',
+    ternary: 'ternary-operation',
+    inv: 'function-invocation',
+    block: 'block',
+    saved: 'reserved'
+};
+
 // Reserved Words
 export const words = [
     'true',
@@ -73,3 +81,6 @@ export const alphabet = /^[a-zA-Z]$/;
 export const isAlphabetic = c => c.match(alphabet);
 export const word = /^[-_a-zA-Z0-9]$/;
 export const isWord = c => c.match(word);
+export const isReserveExpr = token =>
+    token !== 'my' && words.includes(token);
+export const isId = type => type === types.name;
