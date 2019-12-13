@@ -43,10 +43,29 @@ statement
     : expression ";"?
     ;
 expression
+    : ternary-operation
+    : binary-operation
+    : unary-operation
+    : parenthesis-term
+    ;
+ternary-operation
     : parenthesis-expr "?" parenthesis-expr ":" parenthesis-expr
+    ;
+binary-operation
     : parenthesis-term binary-operator parenthesis-expr
+    ;
+binary-operator
+    : "!="
+    : "=="
+    : "|"
+    : "^"
+    : "&"
+    ;
+unary-operation
     : unary-operator parenthesis-expr
-    : term
+    ;
+unary-operator
+    : "!"
     ;
 parenthesis-expr
     : parenthesis | expression
@@ -65,6 +84,7 @@ term
     : variable-assignment
     : function-declaration
     : function-invocation
+    : variable-name
     : while-loop
     : "true"
     : "false"
@@ -104,21 +124,11 @@ invoke-argument
 while-loop
     : "while"  "(" expression ")" block
     ;
-unary-operator
-    : "!"
-    ;
-binary-operator
-    : "!="
-    : "=="
-    : "|"
-    : "^"
-    : "&"
-    ;
 ```
 
 ## Motivation
 
-Ever since I took [Principles of Programming Languages](https://www.cs.rutgers.edu/courses/principles-of-programming-languages) in Fall of 2018, I have been fascinated with learning about different programming language paradigms
+Ever since I took [Principles of Programming Languages](https://www.cs.rutgers.edu/courses/principles-of-programming-languages) in Fall 2018, I have been fascinated with learning about different programming language paradigms
 
 Naturally, the ongoing search piqued my curiosity as to now implement my own language!
 

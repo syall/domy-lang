@@ -29,12 +29,24 @@ export const reserved = new Set(words);
 // Operators
 export const operators = [
     '?',
-    '!',
+    ':',
+    '!=',
+    '==',
     '|',
     '^',
     '&',
-    ':'
+    '!',
 ];
+export const order = new Map([
+    ['?', 40],
+    [':', 40],
+    ['!=', 50],
+    ['==', 50],
+    ['|', 60],
+    ['^', 70],
+    ['&', 80],
+    ['!', 90]
+]);
 export const ops = new Set(operators);
 
 // Utility Functions
