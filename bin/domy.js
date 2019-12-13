@@ -60,7 +60,6 @@ try {
 try {
 	const parser = new DomyParser();
 	meta.tree = parser.parse(meta.tokens);
-	parser.toString();
 } catch (error) {
 	console.error(error);
 	process.exit(1);
