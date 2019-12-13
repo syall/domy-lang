@@ -1,8 +1,9 @@
-class Lexer {
+export default class DomyLexer {
+
 	constructor() {
-		// Record of all past Lexes
+		// Record of all Lexes
 		this.record = [];
-		// Reserved Words
+		// Types
 		this.type = {
 			op: 'operator',
 			paren: 'parenthesis:',
@@ -10,16 +11,22 @@ class Lexer {
 			comma: 'comma',
 			assign: 'assignment',
 			saved: 'reserved',
-			name: 'name'
+			name: 'word'
 		};
+		// Reserved Words
 		this.saved = new Set([
 			'true',
 			'false',
 			'either',
 			'my',
 			'do',
-			'while'
+			'while',
+			'return',
+			'break',
+			'continue',
+			'print'
 		]);
+		// Operators
 		this.ops = new Set([
 			'?',
 			'!',
@@ -35,20 +42,19 @@ class Lexer {
 		let i = 0;
 		let row = 1;
 		let col = 1;
+
+		// Tokens
 		const tokens = [];
 
 		// Utility Functions
-		const isIrrelevant = c =>
-			c <= ' ' || c === ';';
+		const isIrrelevant = c => c <= ' ' || c === ';';
 		const isComment = c => c === '#';
 		const isOperator = c => this.ops.has(c);
 		const isDoubleOperator = c =>
 			(c === '!' || c === '=') &&
 			text[i + 1] === '=';
-		const isParenthesis = c =>
-			c === '(' || c === ')';
-		const isBracket = c =>
-			c === '{' || c === '}';
+		const isParenthesis = c => c === '(' || c === ')';
+		const isBracket = c => c === '{' || c === '}';
 		const isComma = c => c === ',';
 		const isEqual = c => c === '=';
 		const alphabet = /^[a-zA-Z]$/;
@@ -94,7 +100,7 @@ class Lexer {
 					row,
 					col
 				);
-			} else if (isEqual(c)) { // :, &, |, ^, ?, !
+			} else if (isEqual(c)) { // =
 				addToken(
 					c,
 					this.type.assign,
@@ -106,22 +112,16 @@ class Lexer {
 			} else if (isParenthesis(c)) { // (, )
 				addToken(
 					c,
-					this.type.paren +
-						c === '('
-						? 'left'
-						: 'right',
+					`${this.type.paren}${c === '(' ? 'left' : 'right'}`,
 					i,
 					i + 1,
 					row,
 					col
 				);
-			} else if (isBracket(c)) { // [, ]
+			} else if (isBracket(c)) { // {, }
 				addToken(
 					c,
-					this.type.brack +
-						c === '['
-						? 'left'
-						: 'right',
+					`${this.type.brack}${c === '{' ? 'left' : 'right'}`,
 					i,
 					i + 1,
 					row,
@@ -136,7 +136,7 @@ class Lexer {
 					row,
 					col
 				);
-			} else if (isAlphabetic(c)) {
+			} else if (isAlphabetic(c)) { // Words
 				let past = i;
 				let str = '';
 				let cur = text[i];
@@ -157,7 +157,7 @@ class Lexer {
 					col
 				);
 				col += i - past;
-			} else {
+			} else { // No Match
 				throw new Error(`Error: ${c} at row: ${row} col: ${col} cannot be lexed.`);
 			}
 			i++;
@@ -170,5 +170,10 @@ class Lexer {
 		// Return tokens
 		return tokens;
 	}
+
+	toString() {
+		for (const record of this.record)
+			console.table(record);
+	}
+
 }
-export default Lexer;
