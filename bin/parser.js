@@ -152,7 +152,7 @@ export default class DomyParser {
                 if (peek().row === 16) {
                     parseError();
                 }
-                const right = and();
+                const right = expression();
                 return {
                     type: tokenTypes.and,
                     left,
@@ -164,7 +164,7 @@ export default class DomyParser {
             const left = and();
             if (peek().text === '^') {
                 advance('^');
-                const right = xor();
+                const right = expression();
                 return {
                     type: tokenTypes.xor,
                     left,
@@ -176,7 +176,7 @@ export default class DomyParser {
             const left = xor();
             if (peek().text === '|') {
                 advance('|');
-                const right = or();
+                const right = expression();
                 return {
                     type: tokenTypes.or,
                     left,
@@ -188,7 +188,7 @@ export default class DomyParser {
             const left = or();
             if (peek().text === '==') {
                 advance('==');
-                const right = or();
+                const right = expression();
                 return {
                     type: tokenTypes.test,
                     value: '==',
@@ -197,7 +197,7 @@ export default class DomyParser {
                 };
             } else if (peek().text === '!=') {
                 advance('!=');
-                const right = or();
+                const right = expression();
                 return {
                     type: tokenTypes.test,
                     value: '!=',

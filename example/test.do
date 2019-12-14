@@ -14,16 +14,16 @@ my f1 = do(arg1, arg2) {
         : arg2 & !stat | stat;
     # return, ternary-operation
     return (stat) ? arg1 : arg2;
-};
+}
 
 # function-declaration
 my f2 = do(arg1, arg2, arg3) {
     # return, function-invocation
     return arg1(arg2, arg3);
-};
+}
 
 # function-declaration, return
-my f3 = do() { return };
+my f3 = do() { return }
 
 # variable-declaration
 my best = false;
@@ -31,27 +31,44 @@ my best = false;
 # unary-operation
 !best
 # and, while, variable-assignment, unary-operation, function-invocation
-& while(best = !f2(f1, stat, best)) {
+& while best = !f2(f1, stat, best) {
     # and, break
     stat & break;
     # and, continue
     best & continue;
 }
-# and, ternary-operation
-& (best)
-    ? {
-        # variable-assignment
-        best = !best;
-        # function-invocation
-        print(best);
-    }
-    # function invocation, xor
-    : print(best ^ stat)
+# and, while, parenthesis, test
+& while (best != true) {
+    # function-invocation
+    f1(best, stat);
+}
+# and, while, block
+& while {
+    # variable-assignment
+    best = true;
+    stat = false;
+} {
+    # xor, and, continue
+    stat ^ best & continue;
+}
+# and
+& {
+    # ternary-operation
+    (best)
+        ? {
+            # variable-assignment
+            best = !best;
+            # function-invocation
+            print(best);
+        }
+        # function invocation, xor
+        : print(best ^ stat);
+}
 # or, parenthesis, variable-declaration, function-declaration,
-| (my f4 = do(a, b, c) {
+| my f4 = do(a, b, c) {
     # return, parenthesis, xor, and
     return (a ^ c) & b;
-});
+}
 
 # block
 {

@@ -4,14 +4,20 @@
 
 Domy is a simple boolean-centric language.
 
-In terms of language design, Domy shares features from both imperative and functional programming paradigms, supporting first class functions with no object-oriented nature!
+In terms of language design, Domy shares features from both imperative and functional programming paradigms, supporting functions as first class citizens and state.
 
 Core Ideas:
 
-* There are only boolean values!
-* Every construct returns a boolean!
+* Only boolean values exist
+* Every construct has a boolean value
 
 ## Installation
+
+Domy runs as a command line application on node.js.
+
+```bash
+Usage: domy <file path>
+```
 
 Requires npm or yarn:
 
@@ -25,17 +31,11 @@ yarn global add domy-lang
 
 ## Implementation
 
-The Lexer is based on Bob Nystrom's Crafting Interpreters Book [chapter on Scanning](http://craftinginterpreters.com/scanning.html).
+The Lexer is inspired by Bob Nystrom's Crafting Interpreters Book [chapter on Scanning](http://craftinginterpreters.com/scanning.html).
 
-The Parser is a simple parser based on the grammar defined below, as I could not understand the TDOP Parser that I originally wanted to build.
+The Parser is handmade and based on the grammar defined below, as I could not understand the TDOP Parser enough to implement it myself.
 
-The Interpreter is self designed, traversing the Tree produced!
-
-Domy runs as a command line application on node.js.
-
-```bash
-Usage: domy <file path>
-```
+The Interpreter is a simple handmade tree walker.
 
 ## EBNF Grammer Definition
 
@@ -47,72 +47,72 @@ expression
    | block
    | subexpr
    ;
-arg_list
-   : "(" (id ",")* id? ")"
-   ;
-inv_list
-   : "(" (inv ",")* inv? ")"
-   ;
-inv
-   : expression
-   ;
 block
-   : "{" expression* "}"
+   : '{' expression* '}'
    ;
 subexpr
    : test
-   | "my" id "=" expression
-   | id "=" expression
+   | 'my' id '=' expression
+   | id '=' expression
    ;
 test
    : or
-   | or "==" or
-   | or "!=" or
+   | or '==' expression
+   | or '!=' expression
    ;
 or
    : xor
-   | xor "|" or
+   | xor '|' expression
    ;
 xor
    : and
-   | and "^" xor
+   | and '^' expression
    ;
 and
    : not
-   | not "&" and
+   | not '&' expression
    ;
 not
    : term
-   | "!" term
+   | '!' term
    ;
 term
    : true
    | false
    | break
    | continue
-   | "return" expression?
-   | "do" arg_list block
-   | "while" expression block
+   | 'return' expression?
+   | 'do' arg_list block
+   | 'while' expression block
    | id
    | id inv_list
-   | "(" expression ")"
-   | "(" expression ")" "?" (expression | block) ":" (expression | block)
+   | '(' expression ')'
+   | '(' expression ')' '?' (expression | block) ':' (expression | block)
    ;
 id
    : letter (dash | letter | number)*
+   ;
+arg_list
+   : '(' (id ',')* id? ')'
+   ;
+inv_list
+   : '(' (inv ',')* inv? ')'
+   ;
+inv
+   : expression
    ;
 letter
    : [a-z] | [A-Z]
    ;
 dash
-   : "-" | "_"
+   : '-' | '_'
    ;
 number
    : [0-9]
    ;
 WS
    : [\s\r\n\t] -> skip
-   | "#" .* "\n" -> skip
+   | '#' .* '\n' -> skip
    ;
 ```
 
