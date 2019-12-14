@@ -21,5 +21,5 @@ my best = false;
     best & continue;
 }) &
 (best
-    ? best;
-    : best ^ stat);
+    ? { print(best); }
+    : print(best ^ stat));

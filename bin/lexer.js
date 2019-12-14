@@ -149,8 +149,9 @@ export default class DomyLexer {
 	}
 
 	toString() {
+		const options = ['text', 'row', 'col'];
 		for (const record of this.record)
-			console.table(record);
+			console.table(record, options);
 	}
 
 }

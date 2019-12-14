@@ -181,9 +181,7 @@ export default class DomyParser {
             } else return test();
         };
         const inv = () => {
-            if (peek().type === types.name) {
-                return advance(null, types.name);
-            } else return expression();
+            return expression();
         };
         const inv_list = () => {
             const args = [];
@@ -214,7 +212,10 @@ export default class DomyParser {
                 value.push(expression());
             }
             advance('}');
-            return value;
+            return {
+                type: tokenTypes.block,
+                value
+            };
         };
         const expression = () => {
             const { text, type } = peek();
@@ -237,10 +238,7 @@ export default class DomyParser {
                     value
                 };
             } else if (text === '{') {
-                return {
-                    type: tokenTypes.block,
-                    value: block()
-                };
+                return block();
             } else if (isId(type) && peek(1).text === '(') {
                 const name = advance(null, types.name);
                 const args = inv_list();
@@ -256,18 +254,27 @@ export default class DomyParser {
                     type: tokenTypes.expr,
                     result: cond
                 };
-            } else {
-                advance('?');
-                const left = subexpr();
-                advance(':');
-                const right = subexpr();
-                return {
-                    type: tokenTypes.ternary,
-                    cond,
-                    left,
-                    right
-                };
             }
+            advance('?');
+            let left;
+            if (peek().text === '{') {
+                left = block();
+            } else {
+                left = expression();
+            }
+            advance(':');
+            let right;
+            if (peek().text === '{') {
+                right = block();
+            } else {
+                right = expression();
+            }
+            return {
+                type: tokenTypes.ternary,
+                cond,
+                left,
+                right
+            };
         };
         const parseProgram = () => {
             while (peek().text !== '(end)')
@@ -297,7 +304,7 @@ export default class DomyParser {
             'value',
         ];
         for (const record of this.record)
-            console.log(JSON.stringify(record, options, 4));
+            console.log(JSON.stringify(record, options, '  |'));
     }
 
 }

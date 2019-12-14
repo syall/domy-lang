@@ -54,7 +54,7 @@ inv_list
    : "(" (inv ",")* inv? ")"
    ;
 inv
-   : id | expression
+   : expression
    ;
 block
    : "{" expression* "}"

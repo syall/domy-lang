@@ -36,14 +36,12 @@ export const tokenTypes = {
 export const words = [
     'true',
     'false',
-    'either',
     'my',
     'do',
     'while',
     'return',
     'break',
     'continue',
-    'print'
 ];
 export const reserved = new Set(words);
 
