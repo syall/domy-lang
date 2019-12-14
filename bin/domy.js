@@ -46,5 +46,3 @@ meta.lexer.tokenize(meta.fileContent);
 // Parser
 meta.parser = new DomyParser();
 meta.parser.parse(meta.lexer.record.pop());
-
-process.exit(0);
