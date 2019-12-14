@@ -46,9 +46,6 @@ expression
    | id inv_list
    | block
    | subexpr
-   | "return" expression?
-   | "continue"
-   | "break"
    ;
 arg_list
    : "(" (id ",")* id? ")"
@@ -57,7 +54,7 @@ inv_list
    : "(" (inv ",")* inv? ")"
    ;
 inv
-   : id | subexpr
+   : id | expression
    ;
 block
    : "{" expression* "}"
@@ -74,15 +71,15 @@ test
    ;
 or
    : xor
-   | or "|" xor
+   | xor "|" or
    ;
 xor
    : and
-   | xor "^" and
+   | and "^" xor
    ;
 and
    : not
-   | and "&" not
+   | not "&" and
    ;
 not
    : term
@@ -92,6 +89,9 @@ term
    : id
    | true
    | false
+   | break
+   | continue
+   | "return" expression?
    | "(" expression ")"
    ;
 id
