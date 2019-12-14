@@ -1,9 +1,4 @@
-import {
-    types,
-    isId,
-    isReserveExpr,
-    tokenTypes
-} from './utils.js';
+import { types, isId, tokenTypes, printError } from './utils.js';
 
 export default class DomyParser {
 
@@ -19,14 +14,10 @@ export default class DomyParser {
         const results = [];
 
         // Utility Functions
-        const parseError = (s) => {
-            console.table(results);
-            console.error('Could not parse token:');
-            const { text, type, row, col } = tokens[i];
-            console.table({ text, type, row, col });
-            console.trace();
-            if (s) throw new Error(s);
-            else throw new Error();
+        const parseError = s => {
+            const { from, to, row, col } = peek();
+            printError('Parser', s, row, col, from, to);
+            process.exit(1);
         };
         const advance = (c, t) => {
             const { text, type } = tokens[i];
@@ -40,72 +31,250 @@ export default class DomyParser {
             return tokens[i + offset];
         };
 
-        // Grammar Functions
-        const term = () => { };
-        const not = () => { };
-        const and = () => { };
-        const xor = () => { };
-        const or = () => { };
-        const test = () => { };
-        const id = () => { };
-        const subexpr = () => { };
-        const inv = () => { };
-        const inv_list = () => { };
-        const arg_list = () => { };
-        const block = () => { };
-        const expression = () => {
-            const { text, type } = peek();
-            if (isReserveExpr(text)) {
-                // definitely while, do, return, continue, or break
+        // EBNF Grammar Functions
+        const term = () => {
+            const { text } = peek();
+            if (text === 'true') {
+                advance('true');
+                return {
+                    type: tokenTypes.term,
+                    value: true
+                };
+            } else if (text === 'false') {
+                advance('false');
+                return {
+                    type: tokenTypes.term,
+                    value: false
+                };
+            } else if (text === '(') {
+                advance('(');
+                const value = expression();
+                advance(')');
+                return {
+                    type: tokenTypes.paren,
+                    value
+                };
+            } else if (text === 'return') {
+                advance('return');
+                if (peek().text !== '}')
+                    return {
+                        type: tokenTypes.saved,
+                        text,
+                        value: expression()
+                    };
+                else
+                    return {
+                        type: tokenTypes.saved,
+                        text,
+                    };
+            } else if (text === 'continue') {
+                advance('continue');
+
                 return {
                     type: tokenTypes.saved,
-                    value: text,
-                    todo: true
+                    text,
+                };
+            } else if (text === 'break') {
+                advance('break');
+                return {
+                    type: tokenTypes.saved,
+                    text,
+                };
+            }
+            const res = advance(null, types.name);
+            return {
+                type: tokenTypes.id,
+                name: res.text
+            };
+        };
+        const not = () => {
+            if (peek().text === '!') {
+                advance('!');
+                const value = term();
+                return {
+                    type: tokenTypes.uno,
+                    value
+                };
+            } else return term();
+        };
+        const and = () => {
+            const left = not();
+            if (peek().text === '&') {
+                advance('&');
+                if (peek().row === 16) {
+                    parseError();
+                }
+                const right = and();
+                return {
+                    type: tokenTypes.and,
+                    left,
+                    right
+                };
+            } else return left;
+        };
+        const xor = () => {
+            const left = and();
+            if (peek().text === '^') {
+                advance('^');
+                const right = xor();
+                return {
+                    type: tokenTypes.xor,
+                    left,
+                    right
+                };
+            } else return left;
+        };
+        const or = () => {
+            const left = xor();
+            if (peek().text === '|') {
+                advance('|');
+                const right = or();
+                return {
+                    type: tokenTypes.or,
+                    left,
+                    right
+                };
+            } else return left;
+        };
+        const test = () => {
+            const left = or();
+            if (peek().text === '==') {
+                advance('==');
+                const right = or();
+                return {
+                    type: tokenTypes.test,
+                    value: '==',
+                    left,
+                    right
+                };
+            } else if (peek().text === '!=') {
+                advance('!=');
+                const right = or();
+                return {
+                    type: tokenTypes.test,
+                    value: '!=',
+                    left,
+                    right
+                };
+            } else return left;
+        };
+        const subexpr = () => {
+            if (peek().text === 'my') {
+                advance('my');
+                const name = advance(null, types.name);
+                advance('=');
+                const value = expression();
+                return {
+                    type: tokenTypes.varDec,
+                    name,
+                    value
+                };
+            } else if (peek(1).text === '=') {
+                const name = advance(null, types.name);
+                advance('=');
+                const value = expression();
+                return {
+                    type: tokenTypes.varAss,
+                    name,
+                    value
+                };
+            } else return test();
+        };
+        const inv = () => {
+            if (peek().type === types.name) {
+                return advance(null, types.name);
+            } else return expression();
+        };
+        const inv_list = () => {
+            const args = [];
+            advance('(');
+            while (peek().text !== ')') {
+                args.push(inv());
+                if (peek().text === ',')
+                    advance(',');
+            }
+            advance(')');
+            return args;
+        };
+        const arg_list = () => {
+            const args = [];
+            advance('(');
+            while (peek().text !== ')') {
+                args.push(advance(null, types.name));
+                if (peek().text === ',')
+                    advance(',');
+            }
+            advance(')');
+            return args;
+        };
+        const block = () => {
+            const value = [];
+            advance('{');
+            while (peek().text !== '}') {
+                value.push(expression());
+            }
+            advance('}');
+            return value;
+        };
+        const expression = () => {
+            const { text, type } = peek();
+            if (text === 'while') {
+                advance('while');
+                const cond = expression();
+                const value = block();
+                return {
+                    type: tokenTypes.loop,
+                    cond,
+                    value
+                };
+            } else if (text === 'do') {
+                advance('do');
+                const args = arg_list();
+                const value = block();
+                return {
+                    type: tokenTypes.func,
+                    args,
+                    value
                 };
             } else if (text === '{') {
-                // definitely block
                 return {
                     type: tokenTypes.block,
-                    value: text,
-                    todo: true
+                    value: block()
                 };
             } else if (isId(type) && peek(1).text === '(') {
-                // definitely invocation
+                const name = advance(null, types.name);
+                const args = inv_list();
                 return {
                     type: tokenTypes.inv,
-                    value: text,
-                    todo: true
+                    name,
+                    args
                 };
             }
             const cond = subexpr();
-            // definitely not ternary-operation
-            if (peek().text !== '?')
+            if (peek().text !== '?') {
                 return {
                     type: tokenTypes.expr,
-                    value: text,
                     result: cond
                 };
-            // definitely ternary-operation
-            advance('?');
-            const left = subexpr();
-            advance(':');
-            const right = subexpr();
-            return {
-                type: tokenTypes.ternary,
-                cond,
-                left,
-                right
-            };
-        };
-        const parseProgram = async () => {
-            while (i < tokens.length) {
-                // Parse Expressions
-                results.push(expression());
-                // Temporary
-                i++;
+            } else {
+                advance('?');
+                const left = subexpr();
+                advance(':');
+                const right = subexpr();
+                return {
+                    type: tokenTypes.ternary,
+                    cond,
+                    left,
+                    right
+                };
             }
         };
+        const parseProgram = () => {
+            while (peek().text !== '(end)')
+                results.push(expression());
+        };
 
+        // Parse Program
         parseProgram();
 
         // Save to Record
@@ -113,12 +282,22 @@ export default class DomyParser {
 
         // Return Statements
         return results;
-
     }
 
     toString() {
+        const options = [
+            'type',
+            'name',
+            'text',
+            'args',
+            'cond',
+            'left',
+            'right',
+            'result',
+            'value',
+        ];
         for (const record of this.record)
-            console.log(JSON.stringify(record, null, 2));
+            console.log(JSON.stringify(record, options, 4));
     }
 
 }

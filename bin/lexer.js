@@ -10,7 +10,8 @@ import {
 	isComma,
 	isEqual,
 	isAlphabetic,
-	isWord
+	isWord,
+	printError
 } from './utils.js';
 
 export default class DomyLexer {
@@ -131,11 +132,14 @@ export default class DomyLexer {
 				);
 				col += i - past;
 			} else { // No Match
-				throw new Error(`Error: ${c} at row: ${row} col: ${col} cannot be lexed.`);
+				printError('Lexer', `Unable to lex ${c}`, row, col, i, i);
 			}
 			i++;
 			col++;
 		}
+
+		// Add End Token
+		addToken('(end)', types.saved, Infinity, Infinity, Infinity, Infinity);
 
 		// Save to record
 		this.record.push(tokens);

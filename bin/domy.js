@@ -10,7 +10,7 @@ import DomyLexer from './lexer.js';
 import DomyParser from './parser.js';
 
 // Meta Data
-const meta = {
+export const meta = {
 	args: process.argv.length,
 };
 
@@ -47,20 +47,22 @@ try {
 	process.exit(1);
 }
 
-// Create Tokens
-try {
-	const lexer = new DomyLexer();
-	meta.tokens = lexer.tokenize(meta.fileContent);
-} catch (error) {
-	console.error(error);
-	process.exit(1);
-}
+// Lexer
+meta.lexer = new DomyLexer();
+console.group('Lexer');
+console.time('Timer');
+meta.lexer.tokenize(meta.fileContent);
+console.timeEnd('Timer');
+console.groupEnd();
+meta.lexer.toString();
+console.log();
 
-// Create Parse Tree
-try {
-	const parser = new DomyParser();
-	meta.tree = parser.parse(meta.tokens);
-} catch (error) {
-	console.error(error);
-	process.exit(1);
-}
+// Parser
+meta.parser = new DomyParser();
+console.group('Parser');
+console.time('Timer');
+meta.parser.parse(meta.lexer.record[0]);
+console.timeEnd('Timer');
+console.groupEnd();
+meta.parser.toString();
+console.log();
