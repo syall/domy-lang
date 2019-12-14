@@ -129,6 +129,7 @@ My hope is that domy will be my first complete language, regardless of how esote
 Also, I had a crazy line of thought where everything returns a boolean value with no language constructs, but some of the constructs were still useful for my own sanity and for turing completeness.
 
 [syall](https://github.com/syall)
+
 12/12/2019
 
 Fun Fact: My favorite operator is the ternary operator
