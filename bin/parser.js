@@ -1,4 +1,4 @@
-import { types, isId, tokenTypes, printError } from './utils.js';
+import { types, tokenTypes, printError } from './utils.js';
 
 export default class DomyParser {
 
@@ -50,9 +50,31 @@ export default class DomyParser {
                 advance('(');
                 const value = expression();
                 advance(')');
+                if (peek().text !== '?') {
+                    return {
+                        type: tokenTypes.paren,
+                        value
+                    };
+                }
+                advance('?');
+                let left;
+                if (peek().text === '{') {
+                    left = block();
+                } else {
+                    left = expression();
+                }
+                advance(':');
+                let right;
+                if (peek().text === '{') {
+                    right = block();
+                } else {
+                    right = expression();
+                }
                 return {
-                    type: tokenTypes.paren,
-                    value
+                    type: tokenTypes.ternary,
+                    cond: value,
+                    left,
+                    right
                 };
             } else if (text === 'return') {
                 advance('return');
@@ -80,11 +102,37 @@ export default class DomyParser {
                     type: tokenTypes.saved,
                     text,
                 };
+            } else if (text === 'while') {
+                advance('while');
+                const cond = expression();
+                const value = block();
+                return {
+                    type: tokenTypes.loop,
+                    cond,
+                    value
+                };
+            } else if (text === 'do') {
+                advance('do');
+                const args = arg_list();
+                const value = block();
+                return {
+                    type: tokenTypes.func,
+                    args,
+                    value
+                };
             }
-            const res = advance(null, types.name);
+            const name = advance(null, types.name);
+            if (peek().text === '(') {
+                const args = inv_list();
+                return {
+                    type: tokenTypes.inv,
+                    name: name.text,
+                    args
+                };
+            }
             return {
                 type: tokenTypes.id,
-                name: res.text
+                name: name.text
             };
         };
         const not = () => {
@@ -218,63 +266,12 @@ export default class DomyParser {
             };
         };
         const expression = () => {
-            const { text, type } = peek();
-            if (text === 'while') {
-                advance('while');
-                const cond = expression();
-                const value = block();
-                return {
-                    type: tokenTypes.loop,
-                    cond,
-                    value
-                };
-            } else if (text === 'do') {
-                advance('do');
-                const args = arg_list();
-                const value = block();
-                return {
-                    type: tokenTypes.func,
-                    args,
-                    value
-                };
-            } else if (text === '{') {
+            const { text } = peek();
+            if (text === '{') {
                 return block();
-            } else if (isId(type) && peek(1).text === '(') {
-                const name = advance(null, types.name);
-                const args = inv_list();
-                return {
-                    type: tokenTypes.inv,
-                    name,
-                    args
-                };
             }
-            const cond = subexpr();
-            if (peek().text !== '?') {
-                return {
-                    type: tokenTypes.expr,
-                    result: cond
-                };
-            }
-            advance('?');
-            let left;
-            if (peek().text === '{') {
-                left = block();
-            } else {
-                left = expression();
-            }
-            advance(':');
-            let right;
-            if (peek().text === '{') {
-                right = block();
-            } else {
-                right = expression();
-            }
-            return {
-                type: tokenTypes.ternary,
-                cond,
-                left,
-                right
-            };
+            const res = subexpr();
+            return res;
         };
         const parseProgram = () => {
             while (peek().text !== '(end)')

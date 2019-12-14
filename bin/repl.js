@@ -1,3 +1,3 @@
 export default class DomyREPL {
-    run() { }
+    run() { return true; }
 }

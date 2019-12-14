@@ -22,16 +22,8 @@ if (meta.args > 3) {
 }
 
 // REPL
-if (meta.args < 3) {
-	try {
-		const repl = new DomyREPL();
-		repl.run();
-		process.exit(0);
-	} catch (error) {
-		console.error(error);
-		process.exit(1);
-	}
-}
+if (meta.args < 3)
+	new DomyREPL().run() && process.exit(0);
 
 // Set File Argument
 meta.argv = process.argv[meta.args - 1];
@@ -43,26 +35,16 @@ meta.filePath = join(realpathSync('.'), meta.argv);
 try {
 	meta.fileContent = readFileSync(meta.filePath).toString();
 } catch (error) {
-	console.error(`Error: File "${meta.argv}" does not exist.`);
+	console.error(`Error: File '${meta.argv}' could not be loaded.`);
 	process.exit(1);
 }
 
 // Lexer
 meta.lexer = new DomyLexer();
-console.group('Lexer');
-console.time('Timer');
 meta.lexer.tokenize(meta.fileContent);
-console.timeEnd('Timer');
-console.groupEnd();
-meta.lexer.toString();
-console.log();
 
 // Parser
 meta.parser = new DomyParser();
-console.group('Parser');
-console.time('Timer');
 meta.parser.parse(meta.lexer.record.pop());
-console.timeEnd('Timer');
-console.groupEnd();
-meta.parser.toString();
-console.log();
+
+process.exit(0);

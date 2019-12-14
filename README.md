@@ -44,10 +44,6 @@ program
    : expression*
    ;
 expression
-   : subexpr "?" (expression | block) ":" (expression | block)
-   | "while" expression block
-   | "do" arg_list block
-   | id inv_list
    | block
    | subexpr
    ;
@@ -90,13 +86,17 @@ not
    | "!" term
    ;
 term
-   : id
-   | true
+   : true
    | false
    | break
    | continue
    | "return" expression?
+   | "do" arg_list block
+   | "while" expression block
+   | id
+   | id inv_list
    | "(" expression ")"
+   | "(" expression ")" "?" (expression | block) ":" (expression | block)
    ;
 id
    : letter (dash | letter | number)*

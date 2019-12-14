@@ -92,11 +92,10 @@ export const alphabet = /^[a-zA-Z]$/;
 export const isAlphabetic = c => c.match(alphabet);
 export const word = /^[-_a-zA-Z0-9]$/;
 export const isWord = c => c.match(word);
-export const isId = type => type === types.name;
 
 // Error
 export const printError = (t, s, r, c, from, to) => {
-    console.error(`${t} Error: ${s} at row ${r}, col ${c}`);
+    console.error(`${t} Error: ${s} at row ${r}, col ${c}.`);
     let start, end;
     for (start = from; start >= 0; start--)
         if (meta.fileContent[start] === '\n')
