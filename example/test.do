@@ -17,12 +17,17 @@ my f3 = do() { return };
 my best = false;
 
 !best
-& (while(best = !(f2(f1, stat, best))) {
+& (
+    while(best = !(f2(f1, stat, best))) {
         stat & break;
         best & continue;
-})
-&(best
-    ? { best = !best;
-        print(best); }
-    : print(best ^ stat)
+    }
+)
+& (
+    best
+        ? {
+            best = !best;
+            print(best);
+        }
+        : print(best ^ stat)
 );
