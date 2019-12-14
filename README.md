@@ -27,11 +27,15 @@ yarn global add domy-lang
 
 The Lexer is based on Bob Nystrom's Crafting Interpreters Book [chapter on Scanning](http://craftinginterpreters.com/scanning.html).
 
-The Parser is a simplified version of the implementation in Douglas Crockford's Top Down Operator Precedence (a.k.a. TDOP) Parser [Article](http://crockford.com/javascript/tdop/tdop.html).
+The Parser is a simple parser based on the grammar defined below, as I could not understand the TDOP Parser that I originally wanted to build.
 
-The Interpreter is self designed, traversing the Tree produced by the TDOP Parser.
+The Interpreter is self designed, traversing the Tree produced!
 
 Domy runs as a command line application on node.js.
+
+```bash
+Usage: domy <file path>
+```
 
 ## EBNF Grammer Definition
 
