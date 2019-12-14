@@ -61,7 +61,7 @@ console.log();
 meta.parser = new DomyParser();
 console.group('Parser');
 console.time('Timer');
-meta.parser.parse(meta.lexer.record[0]);
+meta.parser.parse(meta.lexer.record.pop());
 console.timeEnd('Timer');
 console.groupEnd();
 meta.parser.toString();
