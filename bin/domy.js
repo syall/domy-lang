@@ -42,11 +42,19 @@ try {
 
 // Lexer
 meta.lexer = new DomyLexer();
-meta.lexer.tokenize(meta.fileContent);
+try {
+	meta.lexer.tokenize(meta.fileContent);
+} catch (error) {
+	process.exit(1);
+}
 
 // Parser
 meta.parser = new DomyParser();
-meta.parser.parse(meta.lexer.record.pop());
+try {
+	meta.parser.parse(meta.lexer.record.pop());
+} catch (error) {
+	process.exit(1);
+}
 
 // Interpreter
 meta.interpreter = new DomyInterpreter();
