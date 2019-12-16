@@ -91,7 +91,7 @@ export const isEqual = c => c === '=';
 export const alphabet = /^[a-zA-Z]$/;
 export const isAlphabetic = c => c.match(alphabet);
 export const word = /^[-_a-zA-Z0-9]$/;
-export const isWord = c => c.match(word);
+export const isWord = c => c && c.match(word);
 
 // Error
 export const printError = (t, s, r, c, from, to) => {
