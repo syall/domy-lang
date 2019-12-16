@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-modules --no-warnings
+#!/usr/bin/env node --experimental-modules --experimental-json-modules --no-warnings
 
 // Import Node.js Modules
 import { readFileSync, realpathSync } from 'fs';

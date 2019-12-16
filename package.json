@@ -11,7 +11,7 @@
   "scripts": {
     "start": "domy example/test.do",
     "debug": "domy --nolazy --inspect-brk=9229 example/test.do",
-    "ref": "node --experimental-modules --no-warnings reference.js example/test.do",
+    "ref": "node --experimental-modules --no-warnings --experimental-json-modules reference.js example/test.do",
     "test": "true"
   },
   "type": "module",
@@ -35,5 +35,8 @@
     "parse",
     "repl",
     "cli"
-  ]
+  ],
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
 }

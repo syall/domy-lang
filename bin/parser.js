@@ -48,7 +48,7 @@ export default class DomyParser {
                 };
             } else if (text === '(') {
                 advance('(');
-                 const value = statement();
+                const value = statement();
                 advance(')');
                 if (peek().text !== '?') {
                     return {
@@ -294,8 +294,11 @@ export default class DomyParser {
             'result',
             'value',
         ];
-        for (const record of this.record)
-            console.log(JSON.stringify(record, options, '  |'));
+        console.log(JSON.stringify(
+            this.record[this.record.length - 1],
+            options,
+            '  |'
+        ));
     }
 
 }
