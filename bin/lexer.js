@@ -13,6 +13,7 @@ import {
 	isWord,
 	printError
 } from './utils.js';
+import { meta } from './domy.js';
 
 export default class DomyLexer {
 
@@ -133,13 +134,14 @@ export default class DomyLexer {
 				col += i - past;
 			} else { // No Match
 				printError('Lexer', `Unable to lex ${c}`, row, col, i, i);
+				throw new Error();
 			}
 			i++;
 			col++;
 		}
 
 		// Add End Token
-		addToken('(end)', types.saved, Infinity, Infinity, Infinity, Infinity);
+		addToken('(end)', types.saved, -1, meta.fileContent.length, Infinity, Infinity);
 
 		// Save to record
 		this.record.push(tokens);

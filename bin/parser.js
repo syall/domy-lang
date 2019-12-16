@@ -17,7 +17,6 @@ export default class DomyParser {
         const parseError = s => {
             const { from, to, row, col } = peek();
             printError('Parser', s, row, col, from, to);
-            process.exit(1);
         };
         const advance = (c, t) => {
             const { text, type } = tokens[i];
