@@ -48,7 +48,7 @@ export default class DomyParser {
                 };
             } else if (text === '(') {
                 advance('(');
-                const value = expression();
+                 const value = statement();
                 advance(')');
                 if (peek().text !== '?') {
                     return {
@@ -61,14 +61,14 @@ export default class DomyParser {
                 if (peek().text === '{') {
                     left = block();
                 } else {
-                    left = expression();
+                    left = statement();
                 }
                 advance(':');
                 let right;
                 if (peek().text === '{') {
                     right = block();
                 } else {
-                    right = expression();
+                    right = statement();
                 }
                 return {
                     type: tokenTypes.ternary,
@@ -82,7 +82,7 @@ export default class DomyParser {
                     return {
                         type: tokenTypes.saved,
                         text,
-                        value: expression()
+                        value: statement()
                     };
                 else
                     return {
@@ -91,7 +91,6 @@ export default class DomyParser {
                     };
             } else if (text === 'continue') {
                 advance('continue');
-
                 return {
                     type: tokenTypes.saved,
                     text,
@@ -104,7 +103,7 @@ export default class DomyParser {
                 };
             } else if (text === 'while') {
                 advance('while');
-                const cond = expression();
+                const cond = statement();
                 const value = block();
                 return {
                     type: tokenTypes.loop,
@@ -120,20 +119,23 @@ export default class DomyParser {
                     args,
                     value
                 };
-            }
-            const name = advance(null, types.name);
-            if (peek().text === '(') {
-                const args = inv_list();
+            } else if (text === '{') {
+                return block();
+            } else if (peek().type === types.name) {
+                const name = advance(null, types.name);
+                if (peek().text === '(') {
+                    const args = inv_list();
+                    return {
+                        type: tokenTypes.inv,
+                        name: name.text,
+                        args
+                    };
+                }
                 return {
-                    type: tokenTypes.inv,
-                    name: name.text,
-                    args
+                    type: tokenTypes.id,
+                    name: name.text
                 };
-            }
-            return {
-                type: tokenTypes.id,
-                name: name.text
-            };
+            } else parseError();
         };
         const not = () => {
             if (peek().text === '!') {
@@ -152,7 +154,7 @@ export default class DomyParser {
                 if (peek().row === 16) {
                     parseError();
                 }
-                const right = expression();
+                const right = and();
                 return {
                     type: tokenTypes.and,
                     left,
@@ -164,7 +166,7 @@ export default class DomyParser {
             const left = and();
             if (peek().text === '^') {
                 advance('^');
-                const right = expression();
+                const right = xor();
                 return {
                     type: tokenTypes.xor,
                     left,
@@ -176,7 +178,7 @@ export default class DomyParser {
             const left = xor();
             if (peek().text === '|') {
                 advance('|');
-                const right = expression();
+                const right = or();
                 return {
                     type: tokenTypes.or,
                     left,
@@ -184,7 +186,7 @@ export default class DomyParser {
                 };
             } else return left;
         };
-        const test = () => {
+        const expression = () => {
             const left = or();
             if (peek().text === '==') {
                 advance('==');
@@ -206,30 +208,8 @@ export default class DomyParser {
                 };
             } else return left;
         };
-        const subexpr = () => {
-            if (peek().text === 'my') {
-                advance('my');
-                const name = advance(null, types.name);
-                advance('=');
-                const value = expression();
-                return {
-                    type: tokenTypes.varDec,
-                    name,
-                    value
-                };
-            } else if (peek(1).text === '=') {
-                const name = advance(null, types.name);
-                advance('=');
-                const value = expression();
-                return {
-                    type: tokenTypes.varAss,
-                    name,
-                    value
-                };
-            } else return test();
-        };
         const inv = () => {
-            return expression();
+            return statement();
         };
         const inv_list = () => {
             const args = [];
@@ -257,7 +237,7 @@ export default class DomyParser {
             const value = [];
             advance('{');
             while (peek().text !== '}') {
-                value.push(expression());
+                value.push(statement());
             }
             advance('}');
             return {
@@ -265,17 +245,31 @@ export default class DomyParser {
                 value
             };
         };
-        const expression = () => {
-            const { text } = peek();
-            if (text === '{') {
-                return block();
-            }
-            const res = subexpr();
-            return res;
+        const statement = () => {
+            if (peek().text === 'my') {
+                advance('my');
+                const name = advance(null, types.name);
+                advance('=');
+                const value = statement();
+                return {
+                    type: tokenTypes.varDec,
+                    name,
+                    value
+                };
+            } else if (peek(1).text === '=') {
+                const name = advance(null, types.name);
+                advance('=');
+                const value = statement();
+                return {
+                    type: tokenTypes.varAss,
+                    name,
+                    value
+                };
+            } else return expression();
         };
         const parseProgram = () => {
             while (peek().text !== '(end)')
-                results.push(expression());
+                results.push(statement());
         };
 
         // Parse Program

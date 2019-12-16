@@ -41,36 +41,29 @@ The Interpreter is a simple handmade tree walker.
 
 ```text
 program
-   : expression*
+   : statement*
+   ;
+statement
+   : expression
+   | 'my' id '=' statement
+   | id '=' statement
    ;
 expression
-   | block
-   | subexpr
-   ;
-block
-   : '{' expression* '}'
-   ;
-subexpr
-   : test
-   | 'my' id '=' expression
-   | id '=' expression
-   ;
-test
    : or
    | or '==' expression
    | or '!=' expression
    ;
 or
    : xor
-   | xor '|' expression
+   | xor '|' or
    ;
 xor
    : and
-   | and '^' expression
+   | and '^' xor
    ;
 and
    : not
-   | not '&' expression
+   | not '&' and
    ;
 not
    : term
@@ -81,13 +74,14 @@ term
    | false
    | break
    | continue
-   | 'return' expression?
+   | 'return' statement?
    | 'do' arg_list block
-   | 'while' expression block
+   | 'while' statement block
    | id
    | id inv_list
-   | '(' expression ')'
-   | '(' expression ')' '?' (expression | block) ':' (expression | block)
+   | '(' statement ')'
+   | '(' statement ')' '?' (statement | block) ':' (statement | block)
+   | block
    ;
 id
    : letter (dash | letter | number)*
@@ -99,7 +93,10 @@ inv_list
    : '(' (inv ',')* inv? ')'
    ;
 inv
-   : expression
+   : statement
+   ;
+block
+   : '{' statement* '}'
    ;
 letter
    : [a-z] | [A-Z]

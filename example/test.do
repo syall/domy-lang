@@ -65,10 +65,10 @@ my best = false;
         : print(best ^ stat);
 }
 # or, parenthesis, variable-declaration, function-declaration,
-| my f4 = do(a, b, c) {
+| (my f4 = do(a, b, c) {
     # return, parenthesis, xor, and
     return (a ^ c) & b;
-}
+})
 
 # block
 {
