@@ -24,7 +24,7 @@ if (meta.args > 3) {
 
 // REPL
 if (meta.args < 3)
-	new DomyREPL();
+	DomyREPL();
 
 // Set File Argument
 meta.argv = process.argv[meta.args - 1];
