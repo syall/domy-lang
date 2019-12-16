@@ -8,6 +8,7 @@ import { join } from 'path';
 import DomyREPL from './repl.js';
 import DomyLexer from './lexer.js';
 import DomyParser from './parser.js';
+import DomyInterpreter from './interpreter.js';
 
 // Meta Data
 export const meta = {
@@ -23,7 +24,7 @@ if (meta.args > 3) {
 
 // REPL
 if (meta.args < 3)
-	new DomyREPL().run() && process.exit(0);
+	new DomyREPL();
 
 // Set File Argument
 meta.argv = process.argv[meta.args - 1];
@@ -46,3 +47,7 @@ meta.lexer.tokenize(meta.fileContent);
 // Parser
 meta.parser = new DomyParser();
 meta.parser.parse(meta.lexer.record.pop());
+
+// Interpreter
+meta.interpreter = new DomyInterpreter();
+meta.interpreter.run(meta.parser.record.pop());

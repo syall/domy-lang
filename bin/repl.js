@@ -1,3 +1,6 @@
 export default class DomyREPL {
-    run() { return true; }
+    constructor() {
+        console.log('Domy REPL Reached!')
+        process.exit(0);
+    }
 }
