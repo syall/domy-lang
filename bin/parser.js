@@ -17,6 +17,7 @@ export default class DomyParser {
         const parseError = s => {
             const { from, to, row, col } = peek();
             printError('Parser', s, row, col, from, to);
+            throw new Error();
         };
         const advance = (c, t) => {
             const { text, type } = tokens[i];
@@ -27,12 +28,12 @@ export default class DomyParser {
             return tokens[i++];
         };
         const peek = (offset = 0) => {
-            return tokens[i + offset];
+            return tokens[i + offset] ? tokens[i + offset] : { text: '' };
         };
 
         // EBNF Grammar Functions
         const term = () => {
-            const { text } = peek();
+            const { text, type } = peek();
             if (text === 'true') {
                 advance('true');
                 return {
@@ -120,7 +121,7 @@ export default class DomyParser {
                 };
             } else if (text === '{') {
                 return block();
-            } else if (peek().type === types.name) {
+            } else if (type === types.name) {
                 const name = advance(null, types.name);
                 if (peek().text === '(') {
                     const args = inv_list();
@@ -134,7 +135,9 @@ export default class DomyParser {
                     type: tokenTypes.id,
                     name: name.text
                 };
-            } else parseError();
+            } else if (text === '(end)') {
+                parseError('Reached end of input');
+            } else parseError('Term could not be parsed');
         };
         const not = () => {
             if (peek().text === '!') {

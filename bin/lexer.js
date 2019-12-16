@@ -141,7 +141,14 @@ export default class DomyLexer {
 		}
 
 		// Add End Token
-		addToken('(end)', types.saved, -1, meta.fileContent.length, Infinity, Infinity);
+		addToken(
+			'(end)',
+			types.saved,
+			-1,
+			meta.fileContent.length,
+			Infinity,
+			Infinity
+		);
 
 		// Save to record
 		this.record.push(tokens);
