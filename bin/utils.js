@@ -1,5 +1,3 @@
-import { meta } from './domy.js';
-
 // Types
 export const types = {
     terop: 'ternary:operator',
@@ -94,17 +92,17 @@ export const word = /^[-_a-zA-Z0-9]$/;
 export const isWord = c => c && c.match(word);
 
 // Error
-export const printError = (t, s, r, c, from, to) => {
+export const printError = (fileContent, t, s, r, c, from, to) => {
     console.error(`${t} Error: ${s} at row ${r}, col ${c}.`);
     let start, end;
     for (start = from; start >= 0; start--)
-        if (meta.fileContent[start] === '\n')
+        if (fileContent[start] === '\n')
             break;
-    for (end = to; end < meta.fileContent.length; end++)
-        if (meta.fileContent[end] === '\n')
+    for (end = to; end < fileContent.length; end++)
+        if (fileContent[end] === '\n')
             break;
     const rightTrim =
-        meta.fileContent
+        fileContent
             .slice(start + 1, end)
             .trimRight();
     const trimmed = rightTrim.trimLeft();

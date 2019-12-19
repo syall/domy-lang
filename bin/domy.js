@@ -11,7 +11,7 @@ import DomyParser from './parser.js';
 import DomyInterpreter from './interpreter.js';
 
 // Meta Data
-export const meta = {
+const meta = {
 	args: process.argv.length,
 };
 
@@ -50,12 +50,14 @@ try {
 
 // Parser
 meta.parser = new DomyParser();
+meta.tokens = meta.lexer.record.pop();
 try {
-	meta.parser.parse(meta.lexer.record.pop());
+	meta.parser.parse(meta.tokens, meta.fileContent);
 } catch (error) {
 	process.exit(1);
 }
 
 // Interpreter
 meta.interpreter = new DomyInterpreter();
-meta.interpreter.run(meta.parser.record.pop());
+meta.tree = meta.parser.record.pop();
+meta.interpreter.run(meta.tree);

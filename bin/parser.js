@@ -7,7 +7,7 @@ export default class DomyParser {
         this.record = [];
     }
 
-    parse(tokens) {
+    parse(tokens, text) {
 
         // State
         let i = 0;
@@ -16,7 +16,7 @@ export default class DomyParser {
         // Utility Functions
         const parseError = s => {
             const { from, to, row, col } = peek();
-            printError('Parser', s, row, col, from, to);
+            printError(text, 'Parser', s, row, col, from, to);
             throw new Error();
         };
         const advance = (c, t) => {

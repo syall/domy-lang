@@ -3,7 +3,6 @@ import pkg from '../package.json';
 import path from 'path';
 import fs from 'fs';
 
-import { meta } from './domy.js';
 import DomyLexer from './lexer.js';
 import DomyParser from './parser.js';
 import DomyInterpreter from './interpreter.js';
@@ -19,6 +18,7 @@ export default function DomyREPL() {
     const lexer = new DomyLexer();
     const parser = new DomyParser();
     const runner = new DomyInterpreter();
+    const meta = {};
 
     const backUp = () => {
         errors.length = 0;
@@ -68,8 +68,8 @@ export default function DomyREPL() {
     const REPL = (...input) => {
         try {
             meta.fileContent = input.join(' ');
-            lexer.tokenize(meta.fileContent);
-            parser.parse(lexer.record[i]);
+            lexer.tokenize(meta.fileContent, meta.fileContent);
+            parser.parse(lexer.record[i], meta.fileContent);
             runner.run(parser.record[i]);
             record.push(meta.fileContent);
             i++;
