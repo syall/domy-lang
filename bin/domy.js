@@ -60,4 +60,9 @@ try {
 // Interpreter
 meta.interpreter = new DomyInterpreter();
 meta.tree = meta.parser.record.pop();
-meta.interpreter.run(meta.tree);
+try {
+	meta.interpreter.run(meta.tree);
+} catch (error) {
+	console.error(error);
+	process.exit(1);
+}
