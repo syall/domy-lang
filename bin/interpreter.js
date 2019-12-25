@@ -261,6 +261,7 @@ export default class DomyInterpreter {
     }
 
     reservedWord(node, scope) {
+        // TODO: Check for reserved work recursion
         if (node.text === 'return')
             return {
                 value: true, type: 'return',
