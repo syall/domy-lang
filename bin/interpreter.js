@@ -92,7 +92,7 @@ export default class DomyInterpreter {
         scope.add(
             node.name,
             node.value.type === tokenTypes.block
-                ? this.validateVariable(this.evaluate(node.value, scope))
+                ? this.validate(this.evaluate(node.value, scope))
                 : this.evaluate(node.value, scope)
         );
         return { value: true };
@@ -105,13 +105,13 @@ export default class DomyInterpreter {
         scope.reassign(
             node.name,
             node.value.type === tokenTypes.block
-                ? this.validateVariable(this.evaluate(node.value, scope))
+                ? this.validate(this.evaluate(node.value, scope))
                 : this.evaluate(node.value, scope)
         );
         return { value: true };
     }
 
-    validateVariable(v) {
+    validate(v) {
         const { value, type, ret } = v;
         if (type === 'return' && ret !== undefined)
             return { value: ret };
@@ -122,14 +122,7 @@ export default class DomyInterpreter {
     }
 
     parenthesisGroup(node, scope) {
-        const { value, type, ret } = this.evaluate(node.value, scope);
-        if (node.value.type === tokenTypes.block)
-            return (type === 'return' && ret !== undefined)
-                ? { value: ret }
-                : { value };
-        if (type !== undefined)
-            throw new Error(`Invalid type for ${node.value.type}.`);
-        return { value };
+        return this.validate(this.evaluate(node.value, scope));
     }
 
     functionInvocation(node, scope) {
@@ -144,10 +137,12 @@ export default class DomyInterpreter {
                 values.push(
                     arg.type === tokenTypes.id
                         ? scope.find(arg.name)
-                        : this.evaluate(arg.value, scope)
+                        : arg.type === tokenTypes.block
+                            ? this.validate(this.evaluate(arg.value, scope))
+                            : this.evaluate(arg.value, scope)
                 );
             }
-            return this.validateFunction(func.value(...values));
+            return this.validate(func.value(...values));
         } else {
             const next = new Scope(scope);
             for (let i = 0; i < func.args.length; i++) {
@@ -155,21 +150,13 @@ export default class DomyInterpreter {
                     func.args[i].text,
                     node.args[i].type === tokenTypes.id
                         ? scope.find(node.args[i].text)
-                        : this.evaluate(node.args[i], scope)
+                        : node.args[i].type === tokenTypes.block
+                            ? this.validate(this.evaluate(node.args[i], scope))
+                            : this.evaluate(node.args[i], scope)
                 );
             }
-            return this.validateFunction(this.evaluate(func.value, next));
+            return this.validate(this.evaluate(func.value, next));
         }
-    }
-
-    validateFunction(v) {
-        const { value, type, ret } = v;
-        if (type !== undefined && type !== 'return')
-            throw new Error(`Only return allowed in Functions.`);
-        if (type === 'return')
-            return { value: ret !== undefined ? ret : value };
-        else
-            return { value };
     }
 
     blockGroup(node, scope) {
@@ -185,11 +172,13 @@ export default class DomyInterpreter {
     reservedWord(node, scope) {
         if (node.text === 'return')
             return {
-                value: true,
-                type: 'return',
-                ret: node.value !== undefined
-                    ? this.evaluate(node.value, scope)
-                    : undefined
+                value: true, type: 'return',
+                ret:
+                    node.value !== undefined
+                        ? node.value.type === tokenTypes.block
+                            ? this.validate(this.evaluate(node.value, scope))
+                            : this.evaluate(node.value, scope)
+                        : undefined
             };
         if (node.text === 'continue')
             return { value: true, type: 'continue' };
@@ -197,29 +186,20 @@ export default class DomyInterpreter {
             return { value: true, type: 'break' };
     }
 
-    // TODO: loop
     loopGroup(node, scope) {
         while (true) {
-            const { value, type, ret } = this.evaluate(node.cond, scope);
-            let cond;
-            if (node.cond.type === tokenTypes.block) {
-                if (type === 'return' && ret !== undefined)
-                    cond = ret;
-                else if (type !== undefined)
-                    throw new Error(`Only return allowed in block.`);
-                else
-                    cond = value;
-            } else
-                cond = value;
-            if (!cond)
+            const cond = node.cond.type === tokenTypes.block
+                ? this.validate(this.evaluate(node.cond, scope))
+                : this.evaluate(node.cond, scope);
+            if (!cond.value)
                 break;
             const next = new Scope(scope);
-            const { value: v, type: t, ret: r } = this.evaluate(node.value, next);
-            if (t === 'return')
-                return { value: r !== undefined ? r : v };
-            else if (t === 'break')
+            const { value, type, ret } = this.evaluate(node.value, next);
+            if (type === 'return')
+                return { value: ret !== undefined ? ret : value };
+            if (type === 'break')
                 break;
-            else
+            if (type === 'continue')
                 continue;
         }
         return { value: true };
