@@ -70,8 +70,15 @@ export default class DomyInterpreter {
     // TODO: ternary
     ternaryOperation(node, scope) { }
 
-    // TODO: unary
-    unaryOperation(node, scope) { }
+    unaryOperation(node, scope) {
+        return {
+            value:
+                !(node.value.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.value, scope)).value
+                    : this.evaluate(node.value, scope).value
+                )
+        };
+    }
 
     // TODO: and
     andExpression(node, scope) { }

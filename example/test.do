@@ -8,6 +8,8 @@ print(stat);
 stat = do(arg1, arg2) {}
 stat(true, true);
 print(stat);
+stat = !stat;
+print(stat);
 # Not Done
 stat = stat ^ false;
 print(stat);

@@ -153,9 +153,6 @@ export default class DomyParser {
             const left = not();
             if (peek().text === '&') {
                 advance('&');
-                if (peek().row === 16) {
-                    parseError();
-                }
                 const right = and();
                 return {
                     type: tokenTypes.and,
