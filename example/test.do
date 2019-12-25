@@ -1,43 +1,41 @@
-# Done
 my stat = true;
-print(stat);
+# 1 print(stat);
 stat = stat;
-print(stat);
+# 2 print(stat);
 stat = (stat);
-print(stat);
+# 3 print(stat);
 stat = do(arg1, arg2) {}
 stat(true, true);
-print(stat);
+# 4 print(stat);
 stat = !stat;
-print(stat);
-# Not Done
+# 5 print(stat);
 stat = stat ^ false;
-print(stat);
+# 6 print(stat);
 stat = stat & true;
-print(stat);
+# 7 print(stat);
 stat = stat | false;
-print(stat);
+# 8 print(stat);
 stat = (stat) ? true : false;
-print(stat);
+# 9 print(stat);
 stat = !stat;
-print(stat);
+# 10 print(stat);
 stat = stat;
-print(stat);
+# 11 print(stat);
 stat = stat == true;
-print(stat);
+# 12 print(stat);
 stat = stat != false;
-print(stat);
+# 13 print(stat);
 stat = false;
-print(stat);
+# 14 print(stat);
 stat = (stat & true) | false;
-print(stat);
-stat = while stat = !stat {
-    !stat & continue;
-    stat & break;
-}
-print(stat);
+# 15 print(stat);
 stat = do(arg1, arg2) {
     return arg1 & arg2;
 }
 stat(true, true);
+# 16 print(stat);
+stat = while stat = !stat {
+    !stat & continue;
+    stat & break;
+}
 print(stat);

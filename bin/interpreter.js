@@ -67,32 +67,102 @@ export default class DomyInterpreter {
         return scope.find(node.name);
     }
 
-    // TODO: ternary
-    ternaryOperation(node, scope) { }
+    ternaryOperation(node, scope) {
+        if (node.left.type === tokenTypes.saved ||
+            node.right.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
+        const cond = node.cond.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.cond, scope))
+            : this.evaluate(node.cond, scope);
+        if (cond.value) return node.left.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.left, scope))
+            : this.evaluate(node.left, scope);
+        else return node.right.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.right, scope))
+            : this.evaluate(node.right, scope);
+    }
 
     unaryOperation(node, scope) {
+        if (node.value.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
         return {
             value:
                 !(node.value.type === tokenTypes.block
                     ? this.validate(this.evaluate(node.value, scope)).value
-                    : this.evaluate(node.value, scope).value
-                )
+                    : this.evaluate(node.value, scope).value)
         };
     }
 
-    // TODO: and
-    andExpression(node, scope) { }
+    andExpression(node, scope) {
+        if (node.left.type === tokenTypes.saved ||
+            node.right.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
+        return {
+            value:
+                (node.left.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.left, scope)).value
+                    : this.evaluate(node.left, scope).value) &&
+                (node.right.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.right, scope)).value
+                    : this.evaluate(node.right, scope).value)
+        };
+    }
 
-    // TODO: xor
-    xorExpression(node, scope) { }
+    xorExpression(node, scope) {
+        if (node.left.type === tokenTypes.saved ||
+            node.right.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
+        const left = node.left.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.left, scope)).value
+            : this.evaluate(node.left, scope).value;
+        const right = node.right.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.right, scope)).value
+            : this.evaluate(node.right, scope).value;
+        return { value: (left && !right) || (!left && right) };
+    }
 
-    // TODO: or
-    orExpression(node, scope) { }
+    orExpression(node, scope) {
+        if (node.left.type === tokenTypes.saved ||
+            node.right.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
+        return {
+            value:
+                (node.left.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.left, scope)).value
+                    : this.evaluate(node.left, scope).value) ||
+                (node.right.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.right, scope)).value
+                    : this.evaluate(node.right, scope).value)
+        };
+    }
 
-    // TODO: comparison
-    comparison(node, scope) { }
+    comparison(node, scope) {
+        if (node.left.type === tokenTypes.saved ||
+            node.right.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
+        if (node.value === '==') return {
+            value:
+                (node.left.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.left, scope)).value
+                    : this.evaluate(node.left, scope).value) ===
+                (node.right.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.right, scope)).value
+                    : this.evaluate(node.right, scope).value)
+        };
+        else return {
+            value:
+                (node.left.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.left, scope)).value
+                    : this.evaluate(node.left, scope).value) !==
+                (node.right.type === tokenTypes.block
+                    ? this.validate(this.evaluate(node.right, scope)).value
+                    : this.evaluate(node.right, scope).value)
+        };
+    }
 
     variableDeclaration(node, scope) {
+        if (node.value.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
         const declaration = scope.find(node.name);
         if (declaration !== undefined)
             throw new Error(`${node.name} is already defined.`);
@@ -106,6 +176,8 @@ export default class DomyInterpreter {
     }
 
     variableAssignment(node, scope) {
+        if (node.value.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
         const assignment = scope.find(node.name);
         if (assignment === undefined)
             throw new Error(`${node.name} is undefined.`);
@@ -129,6 +201,8 @@ export default class DomyInterpreter {
     }
 
     parenthesisGroup(node, scope) {
+        if (node.value.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
         return node.value.type === tokenTypes.block
             ? this.validate(this.evaluate(node.value, scope))
             : this.evaluate(node.value, scope);
@@ -196,6 +270,8 @@ export default class DomyInterpreter {
     }
 
     loopGroup(node, scope) {
+        if (node.cond.type === tokenTypes.saved)
+            throw new Error('Reserved words only allowed in blocks');
         while (true) {
             const cond = node.cond.type === tokenTypes.block
                 ? this.validate(this.evaluate(node.cond, scope))
