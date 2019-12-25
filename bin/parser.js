@@ -255,7 +255,7 @@ export default class DomyParser {
                 const value = statement();
                 return {
                     type: tokenTypes.varDec,
-                    name,
+                    name: name.text,
                     value
                 };
             } else if (peek(1).text === '=') {
@@ -264,7 +264,7 @@ export default class DomyParser {
                 const value = statement();
                 return {
                     type: tokenTypes.varAss,
-                    name,
+                    name: name.text,
                     value
                 };
             } else return expression();

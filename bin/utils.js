@@ -28,6 +28,7 @@ export const tokenTypes = {
     test: 'test',
     varDec: 'variable-declaration',
     varAss: 'variable-assignment',
+    std: 'std'
 };
 
 // Reserved Words
