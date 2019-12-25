@@ -122,7 +122,9 @@ export default class DomyInterpreter {
     }
 
     parenthesisGroup(node, scope) {
-        return this.validate(this.evaluate(node.value, scope));
+        return node.value.type === tokenTypes.block
+            ? this.validate(this.evaluate(node.value, scope))
+            : this.evaluate(node.value, scope);
     }
 
     functionInvocation(node, scope) {
