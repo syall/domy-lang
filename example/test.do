@@ -1,7 +1,14 @@
+# Done
 my stat = true;
 print(stat);
-stat = stat
+stat = stat;
 print(stat);
+stat = (stat);
+print(stat);
+stat = do(arg1, arg2) {}
+stat(true, true);
+print(stat);
+# Not Done
 stat = stat ^ false;
 print(stat);
 stat = stat & true;
