@@ -8,13 +8,10 @@ export default class DomyInterpreter {
             type: tokenTypes.std,
             args: ['toPrint'],
             value: arg => {
-                let display = arg;
-                while (display.value !== undefined)
-                    display = display.value;
                 console.log(
                     arg.type === tokenTypes.func
                         ? arg
-                        : display
+                        : arg.value
                 );
                 return { value: true };
             }
@@ -196,7 +193,7 @@ export default class DomyInterpreter {
     validate(v) {
         const { value, type, ret } = v;
         if (type === 'return' && ret !== undefined)
-            return { value: ret };
+            return ret;
         else if (type !== undefined)
             throw new Error(`Invalid type: ${type}.`);
         else

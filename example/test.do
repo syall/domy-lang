@@ -32,8 +32,8 @@ stat = (stat & true) | false;
 stat = do(arg1, arg2) {
     return arg1 & arg2;
 }
-stat(true, true);
-# 16 print(stat(true, true));
+# 16 print(stat);
+# 17 print(stat(true, true));
 stat = while stat = !stat {
     !stat & continue;
     stat & break;
