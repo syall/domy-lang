@@ -33,7 +33,7 @@ stat = do(arg1, arg2) {
     return arg1 & arg2;
 }
 stat(true, true);
-# 16 print(stat);
+# 16 print(stat(true, true));
 stat = while stat = !stat {
     !stat & continue;
     stat & break;

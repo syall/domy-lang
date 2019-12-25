@@ -8,10 +8,13 @@ export default class DomyInterpreter {
             type: tokenTypes.std,
             args: ['toPrint'],
             value: arg => {
+                let display = arg;
+                while (display.value !== undefined)
+                    display = display.value;
                 console.log(
-                    arg.type !== tokenTypes.func
-                        ? arg.value
-                        : arg
+                    arg.type === tokenTypes.func
+                        ? arg
+                        : display
                 );
                 return { value: true };
             }
@@ -222,7 +225,11 @@ export default class DomyInterpreter {
                         ? scope.find(arg.name)
                         : arg.type === tokenTypes.block
                             ? this.validate(this.evaluate(arg.value, scope))
-                            : this.evaluate(arg.value, scope)
+                            : this.evaluate(
+                                arg.value !== undefined
+                                    ? arg.value
+                                    : arg,
+                                scope)
                 );
             }
             return this.validate(func.value(...values));
