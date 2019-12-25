@@ -80,7 +80,7 @@ term
    | id
    | id inv_list
    | '(' statement ')'
-   | '(' statement ')' '?' (statement | block) ':' (statement | block)
+   | '(' statement ')' '?' statement ':' statement
    | block
    ;
 id
