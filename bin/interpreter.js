@@ -67,6 +67,7 @@ export default class DomyInterpreter {
         return scope.find(node.name);
     }
 
+    // TODO: reserved
     ternaryOperation(node, scope) {
         if (node.left.type === tokenTypes.saved ||
             node.right.type === tokenTypes.saved)
@@ -93,6 +94,7 @@ export default class DomyInterpreter {
         };
     }
 
+    // TODO: reserved
     andExpression(node, scope) {
         if (node.left.type === tokenTypes.saved ||
             node.right.type === tokenTypes.saved)
@@ -108,6 +110,7 @@ export default class DomyInterpreter {
         };
     }
 
+    // TODO: reserved
     xorExpression(node, scope) {
         if (node.left.type === tokenTypes.saved ||
             node.right.type === tokenTypes.saved)
@@ -121,6 +124,7 @@ export default class DomyInterpreter {
         return { value: (left && !right) || (!left && right) };
     }
 
+    // TODO: reserved
     orExpression(node, scope) {
         if (node.left.type === tokenTypes.saved ||
             node.right.type === tokenTypes.saved)
