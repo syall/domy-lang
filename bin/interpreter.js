@@ -13,7 +13,7 @@ export default class DomyInterpreter {
                         ? arg.value
                         : arg
                 );
-                return { value: true, type: 'return' };
+                return { value: true };
             }
         });
         for (const statement of tree)
@@ -89,16 +89,12 @@ export default class DomyInterpreter {
         const declaration = scope.find(node.name);
         if (declaration !== undefined)
             throw new Error(`${node.name} is already defined.`);
-        if (node.value.type === tokenTypes.block) {
-            const { value, type, ret } = this.evaluate(node.value, scope);
-            if (type === 'return' && ret !== undefined)
-                scope.add(node.name, { value: ret });
-            else if (type !== undefined)
-                throw new Error(`Invalid type for ${node.value.type}.`);
-            else
-                scope.add(node.name, { value });
-        } else
-            scope.add(node.name, this.evaluate(node.value, scope));
+        scope.add(
+            node.name,
+            node.value.type === tokenTypes.block
+                ? this.validateVariable(this.evaluate(node.value, scope))
+                : this.evaluate(node.value, scope)
+        );
         return { value: true };
     }
 
@@ -106,27 +102,31 @@ export default class DomyInterpreter {
         const assignment = scope.find(node.name);
         if (assignment === undefined)
             throw new Error(`${node.name} is undefined.`);
-        if (node.value.type === tokenTypes.block) {
-            const { value, type, ret } = this.evaluate(node.value, scope);
-            if (type === 'return' && ret !== undefined)
-                scope.reassign(node.name, { value: ret });
-            else if (type !== undefined)
-                throw new Error(`Invalid type for ${node.value.type}.`);
-            else
-                scope.reassign(node.name, { value });
-        } else
-            scope.reassign(node.name, this.evaluate(node.value, scope));
+        scope.reassign(
+            node.name,
+            node.value.type === tokenTypes.block
+                ? this.validateVariable(this.evaluate(node.value, scope))
+                : this.evaluate(node.value, scope)
+        );
         return { value: true };
+    }
+
+    validateVariable(v) {
+        const { value, type, ret } = v;
+        if (type === 'return' && ret !== undefined)
+            return { value: ret };
+        else if (type !== undefined)
+            throw new Error(`Invalid type: ${type}.`);
+        else
+            return { value };
     }
 
     parenthesisGroup(node, scope) {
         const { value, type, ret } = this.evaluate(node.value, scope);
-        if (node.value.type === tokenTypes.block) {
-            if (type === 'return' && ret !== undefined)
-                return { value: ret };
-            else
-                return { value };
-        }
+        if (node.value.type === tokenTypes.block)
+            return (type === 'return' && ret !== undefined)
+                ? { value: ret }
+                : { value };
         if (type !== undefined)
             throw new Error(`Invalid type for ${node.value.type}.`);
         return { value };
@@ -140,19 +140,14 @@ export default class DomyInterpreter {
             throw new Error(`Argument Length does not match.`);
         if (func.type === tokenTypes.std) {
             const values = [];
-            for (const arg of node.args)
+            for (const arg of node.args) {
                 values.push(
                     arg.type === tokenTypes.id
                         ? scope.find(arg.name)
                         : this.evaluate(arg.value, scope)
                 );
-            const { value, type, ret } = func.value(...values);
-            if (type !== undefined && type !== 'return')
-                throw new Error(`Only return allowed in Functions.`);
-            if (type === 'return')
-                return { value: ret !== undefined ? ret : value };
-            else
-                return { value };
+            }
+            return this.validateFunction(func.value(...values));
         } else {
             const next = new Scope(scope);
             for (let i = 0; i < func.args.length; i++) {
@@ -163,24 +158,26 @@ export default class DomyInterpreter {
                         : this.evaluate(node.args[i], scope)
                 );
             }
-            const { value, type, ret } = this.evaluate(func.value, next);
-            if (type !== undefined && type !== 'return')
-                throw new Error(`Only return allowed in Functions.`);
-            if (type === 'return')
-                return { value: ret !== undefined ? ret : value };
-            else
-                return { value };
+            return this.validateFunction(this.evaluate(func.value, next));
         }
+    }
+
+    validateFunction(v) {
+        const { value, type, ret } = v;
+        if (type !== undefined && type !== 'return')
+            throw new Error(`Only return allowed in Functions.`);
+        if (type === 'return')
+            return { value: ret !== undefined ? ret : value };
+        else
+            return { value };
     }
 
     blockGroup(node, scope) {
         const next = new Scope(scope);
         for (const statement of node.value) {
             const { value, type, ret } = this.evaluate(statement, next);
-            if (type === 'return')
+            if (type !== undefined)
                 return { value, type, ret };
-            else if (type !== undefined)
-                throw new Error(`Only return allowed in Functions.`);
         }
         return { value: true };
     }
@@ -200,6 +197,7 @@ export default class DomyInterpreter {
             return { value: true, type: 'break' };
     }
 
+    // TODO: loop
     loopGroup(node, scope) {
         while (true) {
             const { value, type, ret } = this.evaluate(node.cond, scope);
