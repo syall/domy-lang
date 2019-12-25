@@ -67,18 +67,25 @@ export default class DomyInterpreter {
         return scope.find(node.name);
     }
 
+    // TODO: ternary
     ternaryOperation(node, scope) { }
 
+    // TODO: unary
     unaryOperation(node, scope) { }
 
+    // TODO: and
     andExpression(node, scope) { }
 
+    // TODO: xor
     xorExpression(node, scope) { }
 
+    // TODO: or
     orExpression(node, scope) { }
 
+    // TODO: comparison
     comparison(node, scope) { }
 
+    // TODO: declaration
     variableDeclaration(node, scope) {
         const declaration = scope.find(node.name);
         if (declaration !== undefined)
@@ -87,6 +94,7 @@ export default class DomyInterpreter {
         return { value: true };
     }
 
+    // TODO: assignment
     variableAssignment(node, scope) {
         const assignment = scope.find(node.name);
         if (assignment === undefined)
@@ -95,6 +103,7 @@ export default class DomyInterpreter {
         return { value: true };
     }
 
+    // TODO: parenthesis
     parenthesisGroup(node, scope) {
         return this.evaluate(node.value, scope);
     }
@@ -113,10 +122,13 @@ export default class DomyInterpreter {
                         ? scope.find(arg.name)
                         : this.evaluate(arg.value, scope)
                 );
-            const { value, type } = func.value(...values);
-            if (type !== 'return')
+            const { value, type, ret } = func.value(...values);
+            if (type !== undefined && type !== 'return')
                 throw new Error(`Only return allowed in Functions.`);
-            return { value };
+            if (type === 'return')
+                return { value: ret ? ret : value };
+            else
+                return { value };
         } else {
             const next = new Scope(scope);
             for (let i = 0; i < func.args.length; i++) {
@@ -127,27 +139,43 @@ export default class DomyInterpreter {
                         : this.evaluate(node.args[i], scope)
                 );
             }
-            const { value, type } = this.evaluate(func.value, next);
+            const { value, type, ret } = this.evaluate(func.value, next);
             if (type !== undefined && type !== 'return')
                 throw new Error(`Only return allowed in Functions.`);
-            return { value };
+            if (type === 'return')
+                return { value: ret ? ret : value };
+            else
+                return { value };
         }
     }
 
     blockGroup(node, scope) {
         const next = new Scope(scope);
         for (const statement of node.value) {
-            const { value, type } = this.evaluate(statement, next);
+            const { value, type, ret } = this.evaluate(statement, next);
             if (type === 'return')
-                return { value };
+                return { value, type, ret };
             else if (type !== undefined)
                 throw new Error(`Only return allowed in Functions.`);
         }
         return { value: true };
     }
 
-    reservedWord(node, scope) { }
+    reservedWord(node, scope) {
+        if (node.text === 'return')
+            return {
+                value: true, type: 'return',
+                ret: node.value
+                    ? this.evaluate(node.value, scope)
+                    : undefined
+            };
+        if (node.text === 'continue')
+            return { value: true, type: 'continue' };
+        if (node.text === 'break')
+            return { value: true, type: 'break' };
+    }
 
+    // TODO: loop
     loopGroup(node, scope) { }
 
     functionDeclaration(node, scope) {
