@@ -114,3 +114,38 @@ export const printError = (fileContent, t, s, r, c, from, to) => {
     console.error(`${blank}^`);
     console.error(`${blank}${c}`);
 };
+
+export class Scope {
+
+    constructor(parent) {
+        this.parent = parent;
+        this.vars = new Map();
+    }
+
+    find(name) {
+        let current = this;
+        while (current !== null) {
+            const value = current.vars.get(name);
+            if (value !== undefined)
+                return value;
+            current = current.parent;
+        }
+        return null;
+    }
+
+    add(name, value) {
+        this.vars.set(name, value);
+    }
+
+    reassign(name, value) {
+        let current = this;
+        while (current !== null) {
+            const search = current.vars.get(name);
+            if (search !== undefined)
+                return current.vars.set(name, value);
+            current = current.parent;
+        }
+        return null;
+    }
+
+}

@@ -1,48 +1,4 @@
-import { tokenTypes } from './utils.js';
-
-class Scope {
-    constructor(parent) {
-        this.parent = parent;
-        this.vars = new Map();
-        this.vars.set('print', {
-            args: [{ text: 'toPrint' }],
-            value: {
-                type: tokenTypes.std,
-                args: ['toPrint'],
-                exe: (arg) => {
-                    console.log(arg.value ? arg.value : arg);
-                    return { value: true };
-                }
-            }
-        });
-    }
-
-    find(name) {
-        let current = this;
-        while (current !== null) {
-            const value = current.vars.get(name);
-            if (value !== null && value !== undefined)
-                return value;
-            current = current.parent;
-        }
-        return null;
-    }
-
-    add(name, value) {
-        this.vars.set(name, value);
-    }
-
-    reassign(name, value) {
-        let current = this;
-        while (current !== null) {
-            const search = current.vars.get(name);
-            if (search !== null)
-                return current.vars.set(name, value);
-            current = current.parent;
-        }
-        return null;
-    }
-}
+import { tokenTypes, Scope } from './utils.js';
 
 export default class DomyInterpreter {
     run(tree) {
