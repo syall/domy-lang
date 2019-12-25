@@ -4,6 +4,14 @@ export default class DomyInterpreter {
 
     run(tree) {
         const global = new Scope(null);
+        global.add('print', {
+            type: tokenTypes.std,
+            args: ['toPrint'],
+            value: arg => {
+                console.log(arg);
+                return { value: true, type: 'return' };
+            }
+        });
         for (const statement of tree)
             this.evaluate(statement, global);
     }
@@ -11,88 +19,117 @@ export default class DomyInterpreter {
     evaluate(node, scope) {
         switch (node.type) {
             case tokenTypes.ternary:
-                return this.ternary(node, scope);
+                return this.ternaryOperation(node, scope);
             case tokenTypes.term:
-                return this.term(node);
+                return this.terminal(node, scope);
             case tokenTypes.id:
-                return this.id(node, scope);
+                return this.identifier(node, scope);
             case tokenTypes.uno:
-                return this.unary(node, scope);
+                return this.unaryOperation(node, scope);
             case tokenTypes.and:
-                return this.and(node, scope);
+                return this.andExpression(node, scope);
             case tokenTypes.xor:
-                return this.xor(node, scope);
+                return this.xorExpression(node, scope);
             case tokenTypes.or:
-                return this.or(node, scope);
+                return this.orExpression(node, scope);
             case tokenTypes.test:
-                return this.test(node, scope);
+                return this.comparison(node, scope);
             case tokenTypes.varDec:
                 return this.variableDeclaration(node, scope);
             case tokenTypes.varAss:
                 return this.variableAssignment(node, scope);
             case tokenTypes.paren:
-                return this.parenthesis(node, scope);
+                return this.parenthesisGroup(node, scope);
             case tokenTypes.inv:
                 return this.functionInvocation(node, scope);
             case tokenTypes.block:
-                return this.block(node, scope);
+                return this.blockGroup(node, scope);
             case tokenTypes.saved:
-                return this.reserved(node, scope);
+                return this.reservedWord(node, scope);
             case tokenTypes.loop:
-                return this.loop(node, scope);
+                return this.loopGroup(node, scope);
             case tokenTypes.func:
-                return this.functionDeclaration(node);
+                return this.functionDeclaration(node, scope);
             default:
                 throw new Error('Invalid Token Type.');
         }
     }
 
-    ternary(node, scope) {
+    ternaryOperation(node, scope) { }
+
+    terminal(node, scope) {
+        return { value: node.value };
     }
 
-    term(node) {
+    identifier(node, scope) {
+        return scope.find(node.name);
     }
 
-    id(node, scope) {
-    }
+    unaryOperation(node, scope) { }
 
-    unary(node, scope) {
-    }
+    andExpression(node, scope) { }
 
-    and(node, scope) {
-    }
+    xorExpression(node, scope) { }
 
-    xor(node, scope) {
-    }
+    orExpression(node, scope) { }
 
-    or(node, scope) {
-    }
+    comparison(node, scope) { }
 
-    test(node, scope) {
-    }
+    variableDeclaration(node, scope) { }
 
-    variableDeclaration(node, scope) {
-    }
+    variableAssignment(node, scope) { }
 
-    variableAssignment(node, scope) {
-    }
-
-    parenthesis(node, scope) {
-    }
+    parenthesisGroup(node, scope) { }
 
     functionInvocation(node, scope) {
+        const func = scope.find(node.name);
+        if (func === undefined)
+            throw new Error(`Function ${node.name} is not defined.`);
+        if (func.args.length !== node.args.length)
+            throw new Error(`Argument Length does not match.`);
+        if (func.type === tokenTypes.std) {
+            const values = [];
+            for (const arg of node.args)
+                values.push(arg.type === tokenTypes.id
+                    ? scope.find(arg.text)
+                    : this.evaluate(arg.value, scope)
+                );
+            const { value, type } = func.value(...values);
+            if (type !== 'return')
+                throw new Error(`Only return allowed in Functions.`);
+            return { value };
+        } else {
+            const next = new Scope(scope);
+            for (let i = 0; i < func.args.length; i++)
+                next.add(
+                    func.args[i].text,
+                    node.args[i].type === tokenTypes.id
+                        ? scope.find(node.args[i].text)
+                        : this.evaluate(node.args[i].value, scope)
+                );
+            const { value, type } = this.evaluate(node.value, next);
+            if (type !== 'return')
+                throw new Error(`Only return allowed in Functions.`);
+            return { value };
+        }
     }
 
-    block(node, scope) {
+    blockGroup(node, scope) {
+        const next = new Scope(scope);
+        for (const statement of node.value) {
+            const { value, type } = this.evaluate(statement, next);
+            if (type === 'return')
+                return { value };
+            else if (type !== undefined)
+                throw new Error(`Only return allowed in Functions.`);
+        }
+        return { value: true };
     }
 
-    reserved(node, scope) {
-    }
+    reservedWord(node, scope) { }
 
-    loop(node, scope) {
-    }
+    loopGroup(node, scope) { }
 
-    functionDeclaration(node) {
-    }
+    functionDeclaration(node) { }
 
 }

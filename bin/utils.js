@@ -130,7 +130,7 @@ export class Scope {
                 return value;
             current = current.parent;
         }
-        return null;
+        return undefined;
     }
 
     add(name, value) {
@@ -145,7 +145,7 @@ export class Scope {
                 return current.vars.set(name, value);
             current = current.parent;
         }
-        return null;
+        return undefined;
     }
 
 }
