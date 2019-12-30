@@ -2,9 +2,9 @@ import { tokenTypes, Scope } from './utils.js';
 
 export default class DomyInterpreter {
 
-    run(tree) {
-        const global = new Scope(null);
-        global.add('print', {
+    constructor() {
+        this.global = new Scope(null);
+        this.global.add('print', {
             type: tokenTypes.std,
             args: ['toPrint'],
             value: arg => {
@@ -18,8 +18,11 @@ export default class DomyInterpreter {
                 return { value: true };
             }
         });
+    }
+
+    run(tree) {
         for (const statement of tree)
-            this.evaluate(statement, global);
+            this.evaluate(statement, this.global);
     }
 
     evaluate(node, scope) {
