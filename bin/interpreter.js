@@ -8,11 +8,13 @@ export default class DomyInterpreter {
             type: tokenTypes.std,
             args: ['toPrint'],
             value: arg => {
-                console.log(
+                console.log(JSON.stringify(
                     arg.type === tokenTypes.func
                         ? arg
-                        : arg.value
-                );
+                        : arg.value,
+                    null,
+                    2
+                ));
                 return { value: true };
             }
         });
@@ -67,20 +69,17 @@ export default class DomyInterpreter {
         return scope.find(node.name);
     }
 
-    // TODO: reserved
     ternaryOperation(node, scope) {
-        if (node.left.type === tokenTypes.saved ||
-            node.right.type === tokenTypes.saved)
-            throw new Error('Reserved words only allowed in blocks');
-        const cond = node.cond.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.cond, scope))
-            : this.evaluate(node.cond, scope);
-        if (cond.value) return node.left.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.left, scope))
-            : this.evaluate(node.left, scope);
-        else return node.right.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.right, scope))
-            : this.evaluate(node.right, scope);
+        if (node.left.type === tokenTypes.saved)
+            throw new Error('Reserved words not allowed in condition');
+        const cond = this.evaluate(node.cond, scope);
+        const { value, type, ret } = this.evaluate(
+            cond.value
+                ? node.left
+                : node.right,
+            scope
+        );
+        return { value: ret || value, type };
     }
 
     unaryOperation(node, scope) {
@@ -94,50 +93,34 @@ export default class DomyInterpreter {
         };
     }
 
-    // TODO: reserved
     andExpression(node, scope) {
-        if (node.left.type === tokenTypes.saved ||
-            node.right.type === tokenTypes.saved)
-            throw new Error('Reserved words only allowed in blocks');
-        return {
-            value:
-                (node.left.type === tokenTypes.block
-                    ? this.validate(this.evaluate(node.left, scope)).value
-                    : this.evaluate(node.left, scope).value) &&
-                (node.right.type === tokenTypes.block
-                    ? this.validate(this.evaluate(node.right, scope)).value
-                    : this.evaluate(node.right, scope).value)
-        };
+        const left = this.evaluate(node.left, scope);
+        if (!left.value)
+            return { value: left.value, type: left.type, ret: left.ret };
+        const right = this.evaluate(node.right, scope);
+        const value = right.ret === undefined
+            ? left.value && right.value
+            : left.value && right.ret;
+        return { value, type: right.type };
     }
 
-    // TODO: reserved
     xorExpression(node, scope) {
-        if (node.left.type === tokenTypes.saved ||
-            node.right.type === tokenTypes.saved)
-            throw new Error('Reserved words only allowed in blocks');
-        const left = node.left.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.left, scope)).value
-            : this.evaluate(node.left, scope).value;
-        const right = node.right.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.right, scope)).value
-            : this.evaluate(node.right, scope).value;
-        return { value: (left && !right) || (!left && right) };
+        const left = this.evaluate(node.left, scope);
+        if (left.type)
+            return { value: left.value, type: left.type, ret: left.ret };
+        const right = this.evaluate(node.right, scope);
+        const value = right.ret === undefined
+            ? (left.value && !right.value) || (!left.value && right.value)
+            : (left.value && !right.ret) || (!left.value && right.ret);
+        return { value, type: right.type };
     }
 
-    // TODO: reserved
     orExpression(node, scope) {
-        if (node.left.type === tokenTypes.saved ||
-            node.right.type === tokenTypes.saved)
-            throw new Error('Reserved words only allowed in blocks');
-        return {
-            value:
-                (node.left.type === tokenTypes.block
-                    ? this.validate(this.evaluate(node.left, scope)).value
-                    : this.evaluate(node.left, scope).value) ||
-                (node.right.type === tokenTypes.block
-                    ? this.validate(this.evaluate(node.right, scope)).value
-                    : this.evaluate(node.right, scope).value)
-        };
+        const left = this.evaluate(node.left, scope);
+        if (left.value || left.type)
+            return { value: left.value, type: left.type, ret: left.ret };
+        const right = this.evaluate(node.right, scope);
+        return { value: right.ret || right.value, type: right.type };
     }
 
     comparison(node, scope) {
@@ -207,9 +190,7 @@ export default class DomyInterpreter {
     parenthesisGroup(node, scope) {
         if (node.value.type === tokenTypes.saved)
             throw new Error('Reserved words only allowed in blocks');
-        return node.value.type === tokenTypes.block
-            ? this.validate(this.evaluate(node.value, scope))
-            : this.evaluate(node.value, scope);
+        return this.evaluate(node.value, scope);
     }
 
     functionInvocation(node, scope) {
@@ -261,7 +242,6 @@ export default class DomyInterpreter {
     }
 
     reservedWord(node, scope) {
-        // TODO: Check for reserved work recursion
         if (node.text === 'return')
             return {
                 value: true, type: 'return',
