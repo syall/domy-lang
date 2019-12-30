@@ -36,7 +36,6 @@ print(stat);
 print(stat(true, true));
 stat = false;
 my fn = while stat = !stat {
-    print(stat);
-    stat & continue;
+    stat & print(stat) & continue;
     !stat & break;
 }

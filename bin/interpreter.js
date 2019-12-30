@@ -12,7 +12,10 @@ export default class DomyInterpreter {
                     arg.type === tokenTypes.func
                         ? arg
                         : arg.value,
-                    null,
+                    [
+                        'name', 'text', 'type', 'args',
+                        'value', 'cond', 'left', 'right'
+                    ],
                     2
                 ));
                 return { value: true };
