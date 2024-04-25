@@ -1,11 +1,10 @@
-import readlineSync from '../node_modules/readline-sync/lib/readline-sync.js';
-import pkg from '../package.json';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
+import readlineSync from '../node_modules/readline-sync/lib/readline-sync.js';
 
+import DomyInterpreter from './interpreter.js';
 import DomyLexer from './lexer.js';
 import DomyParser from './parser.js';
-import DomyInterpreter from './interpreter.js';
 
 const { setDefaultOptions, promptCLLoop, } = readlineSync;
 const { writeFileSync, readFileSync, realpathSync } = fs;
@@ -19,6 +18,7 @@ export default function DomyREPL() {
     const parser = new DomyParser();
     const runner = new DomyInterpreter();
     const meta = {};
+    const pkg = JSON.parse(readFileSync('./package.json').toString());
 
     const backUp = () => {
         errors.length = 0;
