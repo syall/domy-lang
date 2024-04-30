@@ -9,6 +9,7 @@ import DomyREPL from './repl.js';
 import DomyLexer from './lexer.js';
 import DomyParser from './parser.js';
 import DomyInterpreter from './interpreter.js';
+import DomyInferenceGenerator from './inference.js';
 
 // Meta Data
 const meta = {
@@ -57,10 +58,14 @@ try {
 	process.exit(1);
 }
 
+// Inference Generator
+meta.inference = new DomyInferenceGenerator();
+
 // Interpreter
 meta.interpreter = new DomyInterpreter();
 meta.tree = meta.parser.record.pop();
 try {
+	meta.inference.run(meta.tree);
 	meta.interpreter.run(meta.tree);
 } catch (error) {
 	console.error(error);

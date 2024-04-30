@@ -2,6 +2,126 @@
 // Adapted from Robert Smallshire's Python implementation:
 // https://github.com/rob-smallshire/hindley-milner-python/blob/master/inference.py
 
+import { tokenTypes } from "./utils.js";
+
+// =============================================================================
+// Translation from Domy nodes to Inference nodes
+
+/**
+ * Type inference for Domy. Translates Domy AST to Inference AST.
+ * 
+ * Operations:
+ * - variable-declaration
+ * - variable-assignment
+ * 
+ * @param {Array} tree The Domy AST
+ * @returns {Array[Lambda|Identifier|Apply|Let|Letrec]} The Inference AST root node(s)
+ */
+function inferTree(tree) {
+    let roots = [];
+    while (tree.length > 0) {
+        const node = tree.shift();
+        if (node === undefined) {
+            break;
+        }
+        // console.log(node);
+        if (node.type === tokenTypes.varDec || node.type === tokenTypes.varAss) {
+            // console.log("Variable declaration or assignment");
+            // Create a copy of the Let binding for each inferTree entry
+            const value = infer(node.value);
+            const substatements = inferTree(tree);
+
+            for (const substatement of substatements) {
+                roots.push(new Let(node.name, value, substatement));
+            }
+    
+            return roots;
+        }
+        roots.push(infer(node));
+    }
+    return roots;
+}
+
+/**
+ * Infer one statement from the Domy AST.
+ * 
+ * One statement operations:
+ * - function-invocation
+ * - function-declaration
+ * - block
+ * - terminal
+ * - identifier
+ * - and
+ * - xor
+ * - or
+ * - test
+ * 
+ * @param {*} node a single statement or nested node
+ * @returns {Lambda|Identifier|Apply|Let|Letrec} The Inference AST root node for the statement and potential block substatements
+ */
+function infer(node) {
+    switch (node.type) {
+        case tokenTypes.inv:
+            // Since Apply only accepts one argument, we need to create a chain of functions
+            // to represent multiple arguments.
+            // console.log("Function invocation");
+            if (node.args.length > 1) {
+                let res = new Apply(new Identifier(node.name), infer(node.args[0]));
+                for (let i = 1; i < node.args.length; i++) {
+                    // Should end up as:
+                    // Apply(Apply(Apply(node.name, arg1), arg2), arg3)
+                    res = new Apply(res, infer(node.args[i]));
+                }
+                return res;
+            }
+            return new Apply(new Identifier(node.name), infer(node.args[0]));
+        case tokenTypes.func:
+            // Since Lambda only accepts one argument, we need to create a chain of functions
+            // to represent multiple arguments.
+            // console.log("Function declaration");
+            // console.log(node);
+            if (node.args.length > 1) {
+                const nestedLambda = infer({
+                    type: tokenTypes.func,
+                    args: node.args.slice(1),
+                    value: node.value
+                });
+                return new Lambda(node.args[0].text, nestedLambda);
+            }
+            return new Lambda(node.args[0].text, infer(node.value));
+        case tokenTypes.block:
+            // TODO: Fix block due to branching let statements
+            // console.log("Block");
+            return inferTree(node.value)[0];
+        case tokenTypes.term:
+            // console.log("Terminal");
+            return new Identifier(node.value);
+        case tokenTypes.id:
+            // console.log("Identifier");
+            return new Identifier(node.name);
+        case tokenTypes.and:
+            // console.log("And");
+            return new Apply(new Apply(new Identifier('and'), infer(node.left)), infer(node.right));
+        case tokenTypes.xor:
+            // console.log("Xor");
+            return new Apply(new Apply(new Identifier('xor'), infer(node.left)), infer(node.right));
+        case tokenTypes.or:
+            // console.log("Or");
+            return new Apply(new Apply(new Identifier('or'), infer(node.left)), infer(node.right));
+        case tokenTypes.test:
+            // console.log("Test");
+            return new Apply(new Apply(new Identifier('test'), infer(node.left)), infer(node.right));
+        case tokenTypes.saved:
+            switch (node.text) {
+                case 'return':
+                    // Ignore return keyword
+                    return infer(node.value);
+            }
+        default:
+            throw new Error(`Unhandled syntax node ${node.type}`);
+    }
+}
+
 // =============================================================================
 // Classes for AST
 
@@ -252,8 +372,10 @@ function analyse(node, env, nonGeneric = null) {
     }
 
     if (node instanceof Identifier) {
+        // console.log(`==Identifier: ${node.name}`);
         return getType(node.name, env, nonGeneric);
     } else if (node instanceof Apply) {
+        // console.log(`==Apply: ${node.fn} ${node.arg}`);
         const funType = analyse(node.fn, env, nonGeneric);
         const argType = analyse(node.arg, env, nonGeneric);
         const resultType = new TypeVariable();
@@ -262,6 +384,7 @@ function analyse(node, env, nonGeneric = null) {
 
         return resultType;
     } else if (node instanceof Lambda) {
+        // console.log(`==Lambda: ${node.v} => ${node.body}`);
         const argType = new TypeVariable();
         const newEnv = new Map(env);
         const newNonGeneric = new Set(nonGeneric);
@@ -272,6 +395,7 @@ function analyse(node, env, nonGeneric = null) {
         
         return new Function(argType, resultType);
     } else if (node instanceof Let) {
+        // console.log(`==Let: ${node.v} = ${node.defn} in ${node.body}`);
         const defnType = analyse(node.defn, env, nonGeneric);
         const newEnv = new Map(env);
 
@@ -279,6 +403,7 @@ function analyse(node, env, nonGeneric = null) {
 
         return analyse(node.body, newEnv, nonGeneric);
     } else if (node instanceof Letrec) {
+        // console.log(`==Letrec: ${node.v} = ${node.defn} in ${node.body}`);
         const newType = new TypeVariable();
         const newEnv = new Map(env);
         const newNonGeneric = new Set(nonGeneric);
@@ -455,7 +580,7 @@ function occursIn(t, types) {
  * @returns {boolean} True if name is an boolean literal, otherwise False
  */
 function isBooleanLiteral(name) {
-    return name === "true" || name === "false";
+    return name.toString().localeCompare("true") === 0 || name.toString().localeCompare("false") === 0;
 }
 
 /*
@@ -482,12 +607,50 @@ def is_integer_literal(name):
  * @returns {boolean} True if name is an integer literal, otherwise False
  */
 function isIntegerLiteral(name) {
-    try {
-        parseInt(name);
-        return true;
-    }
-    catch (e) {
-        return false;
+    return !isNaN(parseInt(name));
+}
+
+// =============================================================================
+// Run
+
+export default class DomyInferenceGenerator {
+    /**
+    * Function to run the type inference algorithm.
+    * @param {Array} tree 
+    */
+   run(tree) {
+        let treeCopy = new Array(...tree);
+        const var1 = new TypeVariable();
+        const env = new Map([
+            ["true", Bool],
+            ["false", Bool],
+            ["print", new Function(var1, var1)],
+            ["and", new Function(Bool, new Function(Bool, Bool))],
+            ["or", new Function(Bool, new Function(Bool, Bool))],
+            ["xor", new Function(Bool, new Function(Bool, Bool))],
+            ["test", new Function(Bool, new Function(Bool, Bool))]
+        ]);
+
+        const roots = inferTree(treeCopy);
+        console.log("Type inference results:");
+        for (const root of roots) {
+            // console.log("----")
+            // console.log(root);
+            let copy = root;
+            while (copy.body !== undefined) {
+                copy = copy.body;
+                // console.log(copy);
+            }
+        }
+        for (const root of roots) {
+            try {
+                const t = analyse(root, env);
+                console.log(t.toString());
+            }
+            catch (e) {
+                console.log(e.message);
+            }
+        }
     }
 }
 
@@ -678,4 +841,4 @@ function main() {
     }
 }
 
-main();
+// main();

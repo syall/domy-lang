@@ -24,7 +24,6 @@ export default class DomyInterpreter {
     }
 
     run(tree) {
-        console.log(tree)
         for (const statement of tree)
             this.evaluate(statement, this.global);
     }
