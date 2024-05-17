@@ -227,7 +227,7 @@ export default class DomyInterpreter {
                 next.add(
                     func.args[i].text,
                     node.args[i].type === tokenTypes.id
-                        ? scope.find(node.args[i].text)
+                        ? scope.find(node.args[i].name)
                         : node.args[i].type === tokenTypes.block
                             ? this.validate(this.evaluate(node.args[i], scope))
                             : this.evaluate(node.args[i], scope)
